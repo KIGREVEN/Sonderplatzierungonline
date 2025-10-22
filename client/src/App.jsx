@@ -12,6 +12,7 @@ import AvailabilityChecker from './components/AvailabilityChecker'
 import ProductsPage from './components/ProductsPage'
 import LocationsPage from './components/LocationsPage'
 import CampaignsPage from './components/CampaignsPage'
+import BookingsPage from './components/BookingsPage'
 import { useAuth } from './context/AuthContext'
 import './App.css'
 
@@ -45,6 +46,7 @@ function Navigation() {
     baseItems.push({ path: '/products', label: 'Produkte', icon: List, permission: 'read' })
     baseItems.push({ path: '/locations', label: 'Orte', icon: List, permission: 'read' })
     baseItems.push({ path: '/campaigns', label: 'Kampagnen', icon: List, permission: 'read' })
+    baseItems.push({ path: '/bookings', label: 'Buchungen', icon: List, permission: 'read' })
 
     // Alle authentifizierten Benutzer können Verfügbarkeit prüfen
     baseItems.push({ path: '/availability', label: 'Verfügbarkeit', icon: Search, permission: 'availability' })
@@ -294,6 +296,7 @@ function App() {
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/locations" element={<LocationsPage />} />
                 <Route path="/campaigns" element={<CampaignsPage />} />
+                <Route path="/bookings" element={<BookingsPage />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 {/* Redirect für unbekannte Routen */}
                 <Route path="*" element={<Navigate to="/" replace />} />
