@@ -1,0 +1,52 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: koeln-branchen-db
+    plan: free
+    region: frankfurt
+
+  # Backend API Service
+  - type: web
+    name: koeln-branchen-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: koeln-branchen-db
+          property: connectionString
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: CLEANUP_INTERVAL_MINUTES
+        value: 30
+      - key: RESERVATION_TIMEOUT_MINUTES
+        value: 30
+
+  # Frontend Static Site
+  - type: web
+    name: koeln-branchen-frontend
+    runtime: static
+    plan: free
+    region: frankfurt
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: client/dist
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: koeln-branchen-api
+          property: host
+
