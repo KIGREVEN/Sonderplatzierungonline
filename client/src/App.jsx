@@ -145,7 +145,46 @@ function Navigation() {
 }
 
 function Dashboard() {
-  const { isAdmin, hasPermission } = useAuth()
+  const { isAdmin, hasPermission, apiRequest } = useAuth()
+  const [stats, setStats] = useState({
+    activeBookings: 0,
+    availablePlaces: 0,
+    pendingReservations: 0,
+    recentBookings: []
+  })
+  const [loading, setLoading] = useState(true)
+
+  const fetchDashboardData = async () => {
+    setLoading(true)
+    try {
+      const [bookingsRes, availabilityRes] = await Promise.all([
+        apiRequest('/api/bookings'),
+        apiRequest('/api/bookings/availability/summary')
+      ])
+
+      if (bookingsRes.ok && availabilityRes.ok) {
+        const bookingsData = await bookingsRes.json()
+        const availabilityData = await availabilityRes.json()
+
+        setStats({
+          activeBookings: bookingsData.data.filter(b => b.status === 'confirmed').length,
+          availablePlaces: availabilityData.data.availablePlaces || 0,
+          pendingReservations: bookingsData.data.filter(b => b.status === 'pending').length,
+          recentBookings: bookingsData.data.slice(0, 5)
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchDashboardData()
+    // Aktualisiere die Daten alle 5 Minuten
+    const interval = setInterval(fetchDashboardData, 300000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -170,10 +209,16 @@ function Dashboard() {
             <List className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">
-              Wird nach dem ersten Laden angezeigt
-            </p>
+            {loading ? (
+              <div className="text-2xl font-bold animate-pulse">...</div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{stats.activeBookings}</div>
+                <p className="text-xs text-muted-foreground">
+                  Aktuell bestätigte Buchungen
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -183,10 +228,16 @@ function Dashboard() {
             <Search className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">
-              Prüfen Sie die Verfügbarkeit
-            </p>
+            {loading ? (
+              <div className="text-2xl font-bold animate-pulse">...</div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{stats.availablePlaces}</div>
+                <p className="text-xs text-muted-foreground">
+                  Freie Platzierungen
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -196,10 +247,16 @@ function Dashboard() {
             <List className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">
-              Offene Reservierungen
-            </p>
+            {loading ? (
+              <div className="text-2xl font-bold animate-pulse">...</div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{stats.pendingReservations}</div>
+                <p className="text-xs text-muted-foreground">
+                  Ausstehende Reservierungen
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -224,7 +281,7 @@ function Dashboard() {
                 Verfügbarkeit prüfen
               </Button>
             </Link>
-            <Link to="/" className="block">
+            <Link to="/bookings" className="block">
               <Button variant="outline" className="w-full justify-start">
                 <List className="h-4 w-4 mr-2" />
                 Alle Buchungen anzeigen
@@ -234,24 +291,48 @@ function Dashboard() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Systeminfo</CardTitle>
+          <CardHeader className="flex justify-between items-center">
+            <CardTitle>Neueste Buchungen</CardTitle>
+            <Link to="/bookings">
+              <Button variant="ghost" size="sm">
+                Alle anzeigen
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Version:</span>
-                <span>1.0.0</span>
+            {loading ? (
+              <div className="animate-pulse space-y-2">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded"></div>
+                ))}
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Platzierungen:</span>
-                <span>1-6</span>
+            ) : stats.recentBookings.length > 0 ? (
+              <div className="space-y-4">
+                {stats.recentBookings.map((booking, i) => (
+                  <div key={booking.id} className="flex justify-between items-center text-sm">
+                    <div>
+                      <div className="font-medium">{booking.kundenname}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className={`px-2 py-1 rounded text-xs ${
+                      booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                      booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {booking.status === 'confirmed' ? 'Bestätigt' :
+                       booking.status === 'pending' ? 'Ausstehend' :
+                       booking.status}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Status:</span>
-                <span className="text-green-600">Online</span>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                Keine aktuellen Buchungen
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>

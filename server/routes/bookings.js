@@ -194,7 +194,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res, next) =>
   }
 });
 
-// POST /api/bookings/cleanup - Clean up expired reservations (Admin only)
+// Clean up expired reservations (older than 30 minutes)
 router.post('/cleanup', authenticateToken, requireAdmin, async (req, res, next) => {
   try {
     const cleanedBookings = await Booking.cleanupExpiredReservations();
@@ -203,6 +203,33 @@ router.post('/cleanup', authenticateToken, requireAdmin, async (req, res, next) 
       success: true,
       message: `${cleanedBookings.length} expired reservations cleaned up`,
       data: cleanedBookings
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get availability summary for dashboard
+router.get('/availability/summary', authenticateToken, async (req, res, next) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const totalPlaces = 6; // Maximale Anzahl der Plätze
+    
+    // Zähle aktive Buchungen für heute
+    const activeBookings = await Booking.findAll({
+      status: 'confirmed',
+      zeitraum_von: today
+    });
+    
+    const availablePlaces = totalPlaces - activeBookings.length;
+    
+    res.json({
+      success: true,
+      data: {
+        totalPlaces,
+        availablePlaces,
+        occupiedPlaces: activeBookings.length
+      }
     });
   } catch (error) {
     next(error);
