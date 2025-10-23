@@ -13,6 +13,7 @@
     "migrate:status": "node scripts/migrate.js status",
   "fix:categories": "node scripts/fix_categories_schema.js",
   "fix:bookings": "node scripts/fix_bookings_schema.js",
+    "fix:all": "npm run migrate:articles && npm run fix:categories && npm run fix:bookings",
     "migrate:articles": "node scripts/run_article_migrations.js",
     "seed": "node scripts/seed.js",
     "seed:run": "node scripts/seed.js seed",

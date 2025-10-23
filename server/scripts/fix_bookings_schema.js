@@ -29,7 +29,7 @@ const { query } = require('../config/database');
     `);
     console.log('✅ Ensured bookings.verkaufspreis');
 
-    // Align status allowed values: drop old check and add new one
+    // Align status allowed values: drop old check, normalize existing values, and add new validated check
     await query(`
       DO $$
       DECLARE
@@ -43,11 +43,29 @@ const { query } = require('../config/database');
         END LOOP;
       END$$;
     `);
+    // Normalize any legacy or unexpected status values to fit the simplified set
+    await query(`
+      UPDATE bookings
+      SET status = CASE
+        WHEN status ILIKE 'geplant' THEN 'vorreserviert'
+        WHEN status ILIKE 'bestätigt' OR status ILIKE 'bestaetigt' OR status ILIKE 'bestatigt' THEN 'gebucht'
+        WHEN status ILIKE 'abgelehnt' OR status ILIKE 'storniert' OR status ILIKE 'canceled' OR status ILIKE 'cancelled' THEN 'reserviert'
+        WHEN status ILIKE 'vorreserviert' THEN 'vorreserviert'
+        WHEN status ILIKE 'reserviert' THEN 'reserviert'
+        WHEN status ILIKE 'gebucht' THEN 'gebucht'
+        ELSE 'reserviert'
+      END
+      WHERE status IS NOT NULL AND status NOT IN ('vorreserviert','reserviert','gebucht');
+    `);
+    // Add constraint as NOT VALID first to avoid immediate failure, then validate after normalization
     await query(`
       ALTER TABLE bookings 
-      ADD CONSTRAINT chk_bookings_status CHECK (status IN ('vorreserviert','reserviert','gebucht'))
+      ADD CONSTRAINT chk_bookings_status CHECK (status IN ('vorreserviert','reserviert','gebucht')) NOT VALID
     `);
-    console.log('✅ Updated status CHECK constraint');
+    await query(`
+      ALTER TABLE bookings VALIDATE CONSTRAINT chk_bookings_status
+    `);
+    console.log('✅ Updated status CHECK constraint (normalized and validated)');
 
     // Indexes to speed up lookups
     await query(`CREATE INDEX IF NOT EXISTS idx_bookings_platform_id ON bookings(platform_id)`);
