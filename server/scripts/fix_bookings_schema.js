@@ -67,6 +67,37 @@ const { query } = require('../config/database');
     `);
     console.log('✅ Updated status CHECK constraint (normalized and validated)');
 
+    // Legacy columns no longer required by simplified model should be nullable
+    await query(`
+      DO $$
+      BEGIN
+        -- Drop NOT NULL only if column exists
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'bookings' AND column_name = 'belegung'
+        ) THEN
+          BEGIN
+            ALTER TABLE bookings ALTER COLUMN belegung DROP NOT NULL;
+          EXCEPTION WHEN others THEN
+            -- ignore if already nullable
+            NULL;
+          END;
+        END IF;
+
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'bookings' AND column_name = 'platzierung'
+        ) THEN
+          BEGIN
+            ALTER TABLE bookings ALTER COLUMN platzierung DROP NOT NULL;
+          EXCEPTION WHEN others THEN
+            NULL;
+          END;
+        END IF;
+      END$$;
+    `);
+    console.log('✅ Made legacy columns belegung/platzierung nullable');
+
     // Indexes to speed up lookups
     await query(`CREATE INDEX IF NOT EXISTS idx_bookings_platform_id ON bookings(platform_id)`);
     await query(`CREATE INDEX IF NOT EXISTS idx_bookings_product_id ON bookings(product_id)`);
