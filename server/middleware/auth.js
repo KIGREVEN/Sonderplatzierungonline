@@ -36,6 +36,14 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
+    // Prüfen ob Benutzer aktiv ist
+    if (!user.is_active) {
+      return res.status(403).json({
+        success: false,
+        message: 'Ihr Konto wurde deaktiviert. Bitte kontaktieren Sie einen Administrator.'
+      });
+    }
+
     // Benutzer-Informationen an Request anhängen
     req.user = user;
     next();

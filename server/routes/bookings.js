@@ -7,12 +7,15 @@ const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware
 router.get('/', authenticateToken, async (req, res, next) => {
   try {
     const filters = {
-      belegung: req.query.belegung,
+      // New simplified booking fields
+      platform_id: req.query.platform_id ? parseInt(req.query.platform_id) : undefined,
+      product_id: req.query.product_id ? parseInt(req.query.product_id) : undefined,
+      location_id: req.query.location_id ? parseInt(req.query.location_id) : undefined,
+      category_id: req.query.category_id ? parseInt(req.query.category_id) : undefined,
+      campaign_id: req.query.campaign_id ? parseInt(req.query.campaign_id) : undefined,
+      // General filters
       berater: req.query.berater,
-      status: req.query.status,
-      platzierung: req.query.platzierung ? parseInt(req.query.platzierung) : undefined,
-      zeitraum_von: req.query.zeitraum_von,
-      zeitraum_bis: req.query.zeitraum_bis
+      status: req.query.status
     };
 
     // Remove undefined values

@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://217.110.253.198:3001';
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   // Initialisierung: Prüfe ob Benutzer bereits angemeldet ist
   useEffect(() => {

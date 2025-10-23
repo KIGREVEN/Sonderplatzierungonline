@@ -14,8 +14,6 @@ export default function CampaignsPage(){
   const [editCampaign, setEditCampaign] = useState(null)
   const [formData, setFormData] = useState({
     label: '',
-    from_date: '',
-    to_date: '',
     is_active: true
   })
 
@@ -47,8 +45,6 @@ export default function CampaignsPage(){
         setEditCampaign(null)
         setFormData({
           label: '',
-          from_date: '',
-          to_date: '',
           is_active: true
         })
       }
@@ -73,8 +69,6 @@ export default function CampaignsPage(){
     setEditCampaign(campaign)
     setFormData({
       label: campaign.label,
-      from_date: campaign.from_date || '',
-      to_date: campaign.to_date || '',
       is_active: campaign.is_active
     })
     setDialogOpen(true)
@@ -93,8 +87,6 @@ export default function CampaignsPage(){
                 setEditCampaign(null)
                 setFormData({
                   label: '',
-                  from_date: '',
-                  to_date: '',
                   is_active: true
                 })
               }}>
@@ -113,22 +105,6 @@ export default function CampaignsPage(){
                     onChange={(e) => setFormData(prev => ({...prev, label: e.target.value}))}
                     placeholder="Kampagnen-Label"
                     required
-                  />
-                </div>
-                <div>
-                  <Label>Von</Label>
-                  <Input
-                    type="date"
-                    value={formData.from_date}
-                    onChange={(e) => setFormData(prev => ({...prev, from_date: e.target.value}))}
-                  />
-                </div>
-                <div>
-                  <Label>Bis</Label>
-                  <Input
-                    type="date"
-                    value={formData.to_date}
-                    onChange={(e) => setFormData(prev => ({...prev, to_date: e.target.value}))}
                   />
                 </div>
                 <div className="flex items-center space-x-2">
@@ -161,9 +137,6 @@ export default function CampaignsPage(){
                 <li key={c.id} className="py-2 border-b flex justify-between items-center">
                   <div>
                     <div className="font-medium">{c.label}</div>
-                    <div className="text-xs text-gray-500">
-                      {c.from_date || '-'} → {c.to_date || '-'}
-                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="text-sm text-gray-600">{c.is_active? 'aktiv':'inaktiv'}</div>

@@ -10,12 +10,11 @@ const BookingOverview = () => {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: '',
-    belegung: '',
+    platform: '',
+    location: '',
+    campaign: '',
     berater: '',
-    status: '',
-    platzierung: '',
-    startDate: '', // Neuer Datumsfilter
-    endDate: ''    // Neuer Datumsfilter
+    status: ''
   });
 
   // Edit Modal State
@@ -103,59 +102,43 @@ const BookingOverview = () => {
       console.warn('CurrentFilters ist undefined, verwende leere Filter');
       currentFilters = {
         search: '',
-        belegung: '',
+        platform: '',
+        location: '',
+        campaign: '',
         berater: '',
-        status: '',
-        platzierung: '',
-        startDate: '',
-        endDate: ''
+        status: ''
       };
     }
     
     let filtered = bookings.filter(booking => {
-      // Text-basierte Filter
+      // Allgemeine Suche (Name, Nummer)
       const matchesSearch = !currentFilters.search || 
-        booking.kundenname.toLowerCase().includes(currentFilters.search.toLowerCase()) ||
-        booking.kundennummer.toLowerCase().includes(currentFilters.search.toLowerCase()) ||
-        booking.belegung.toLowerCase().includes(currentFilters.belegung.toLowerCase());
+        booking.kundenname?.toLowerCase().includes(currentFilters.search.toLowerCase()) ||
+        booking.kundennummer?.toLowerCase().includes(currentFilters.search.toLowerCase());
 
-      const matchesBelegung = !currentFilters.belegung || 
-        booking.belegung.toLowerCase().includes(currentFilters.belegung.toLowerCase());
+      // Plattform
+      const matchesPlatform = !currentFilters.platform || 
+        booking.platform_name?.toLowerCase().includes(currentFilters.platform.toLowerCase());
 
+      // Ort
+      const matchesLocation = !currentFilters.location || 
+        booking.location_name?.toLowerCase().includes(currentFilters.location.toLowerCase());
+
+      // Kampagne
+      const matchesCampaign = !currentFilters.campaign || 
+        booking.campaign_name?.toLowerCase().includes(currentFilters.campaign.toLowerCase());
+
+      // Berater
       const matchesBerater = !currentFilters.berater || 
-        booking.berater.toLowerCase().includes(currentFilters.berater.toLowerCase());
+        booking.berater?.toLowerCase().includes(currentFilters.berater.toLowerCase());
 
+      // Status
       const matchesStatus = !currentFilters.status || 
         currentFilters.status === 'alle' || 
         booking.status === currentFilters.status;
 
-      const matchesPlatzierung = !currentFilters.platzierung || 
-        currentFilters.platzierung === 'alle' || 
-        booking.platzierung.toString() === currentFilters.platzierung;
-
-      // Datumsfilter
-      let matchesDateRange = true;
-      if (currentFilters.startDate || currentFilters.endDate) {
-        const bookingStart = new Date(booking.zeitraum_von);
-        const bookingEnd = new Date(booking.zeitraum_bis);
-        
-        if (currentFilters.startDate) {
-          const filterStart = parseDate(currentFilters.startDate);
-          if (filterStart && bookingEnd < filterStart) {
-            matchesDateRange = false;
-          }
-        }
-        
-        if (currentFilters.endDate) {
-          const filterEnd = parseDate(currentFilters.endDate);
-          if (filterEnd && bookingStart > filterEnd) {
-            matchesDateRange = false;
-          }
-        }
-      }
-
-      return matchesSearch && matchesBelegung && matchesBerater && 
-             matchesStatus && matchesPlatzierung && matchesDateRange;
+      return matchesSearch && matchesPlatform && matchesLocation && 
+             matchesCampaign && matchesBerater && matchesStatus;
     });
 
     setFilteredBookings(filtered);
@@ -165,15 +148,14 @@ const BookingOverview = () => {
   const resetFilters = () => {
     const emptyFilters = {
       search: '',
-      belegung: '',
+      platform: '',
+      location: '',
+      campaign: '',
       berater: '',
-      status: '',
-      platzierung: '',
-      startDate: '',
-      endDate: ''
+      status: ''
     };
     setFilters(emptyFilters);
-    setFilteredBookings(bookings);
+    applyFilters(emptyFilters);
   };
 
   // Buchung löschen
@@ -262,23 +244,51 @@ const BookingOverview = () => {
             </label>
             <input
               type="text"
-              placeholder="Name, Nummer, Belegung..."
+              placeholder="Name, Nummer..."
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500"
             />
           </div>
 
-          {/* Belegung */}
+          {/* Plattform */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              🏢 Belegung
+              � Plattform
             </label>
             <input
               type="text"
-              placeholder="z.B. Kanalreinigung"
-              value={filters.belegung}
-              onChange={(e) => handleFilterChange('belegung', e.target.value)}
+              placeholder="z.B. Gelbe Seiten"
+              value={filters.platform}
+              onChange={(e) => handleFilterChange('platform', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500"
+            />
+          </div>
+
+          {/* Ort */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              � Ort
+            </label>
+            <input
+              type="text"
+              placeholder="z.B. Köln"
+              value={filters.location}
+              onChange={(e) => handleFilterChange('location', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500"
+            />
+          </div>
+
+          {/* Kampagne */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              📅 Kampagne
+            </label>
+            <input
+              type="text"
+              placeholder="z.B. 25/26"
+              value={filters.campaign}
+              onChange={(e) => handleFilterChange('campaign', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500"
             />
           </div>
@@ -286,7 +296,7 @@ const BookingOverview = () => {
           {/* Berater */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              👨‍💼 Berater
+              �‍💼 Berater
             </label>
             <input
               type="text"
@@ -308,56 +318,10 @@ const BookingOverview = () => {
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Alle Status</option>
-              <option value="vorreserviert">vorreserviert</option>
+              <option value="vorreserviert">Vorreserviert</option>
               <option value="reserviert">Reserviert</option>
               <option value="gebucht">Gebucht</option>
             </select>
-          </div>
-
-          {/* Platzierung */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              📍 Platzierung
-            </label>
-            <select
-              value={filters.platzierung}
-              onChange={(e) => handleFilterChange('platzierung', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Alle Platzierungen</option>
-              <option value="1">Platzierung 1</option>
-              <option value="2">Platzierung 2</option>
-              <option value="3">Platzierung 3</option>
-              <option value="4">Platzierung 4</option>
-              <option value="5">Platzierung 5</option>
-              <option value="6">Platzierung 6</option>
-            </select>
-          </div>
-
-          {/* Startdatum Filter */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              📅 Von Datum
-            </label>
-            <DatePicker
-              value={filters.startDate}
-              onChange={handleDateFilterChange('startDate')}
-              placeholder="tt.mm.jjjj"
-              name="startDate"
-            />
-          </div>
-
-          {/* Enddatum Filter */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              📅 Bis Datum
-            </label>
-            <DatePicker
-              value={filters.endDate}
-              onChange={handleDateFilterChange('endDate')}
-              placeholder="tt.mm.jjjj"
-              name="endDate"
-            />
           </div>
         </div>
       </div>
@@ -375,28 +339,34 @@ const BookingOverview = () => {
           <table className="w-full table-fixed">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '20%'}}>
+                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '15%'}}>
                   Kunde
                 </th>
-                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '15%'}}>
-                  Belegung
-                </th>
-                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '15%'}}>
-                  Zeitraum
-                </th>
-                <th className="px-1 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '8%'}}>
-                  Platz
-                </th>
-                <th className="px-1 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '10%'}}>
-                  Status
+                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '10%'}}>
+                  Plattform
                 </th>
                 <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '12%'}}>
-                  Berater
+                  Artikel
                 </th>
-                <th className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '12%'}}>
-                  Preis
+                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '10%'}}>
+                  Ort
+                </th>
+                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '12%'}}>
+                  Branche
+                </th>
+                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '8%'}}>
+                  Kampagne
                 </th>
                 <th className="px-1 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '8%'}}>
+                  Status
+                </th>
+                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '10%'}}>
+                  Berater
+                </th>
+                <th className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '10%'}}>
+                  Preis
+                </th>
+                <th className="px-1 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{width: '5%'}}>
                   Aktionen
                 </th>
               </tr>
@@ -404,7 +374,7 @@ const BookingOverview = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {Array.isArray(filteredBookings) && filteredBookings.map((booking) => (
                 <tr key={booking.id} className="hover:bg-gray-50">
-                  <td className="px-2 py-4" style={{width: '20%'}}>
+                  <td className="px-2 py-4" style={{width: '15%'}}>
                     <div className="overflow-hidden">
                       <div className="text-sm font-medium text-gray-900 truncate">
                         {booking.kundenname}
@@ -414,30 +384,32 @@ const BookingOverview = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-2 py-4 text-sm text-gray-900" style={{width: '15%'}}>
-                    <div className="truncate" title={booking.belegung}>
-                      {booking.belegung}
+                  <td className="px-2 py-4 text-sm text-gray-900" style={{width: '10%'}}>
+                    <div className="truncate" title={booking.platform_name}>
+                      {booking.platform_name || '-'}
                     </div>
                   </td>
-                  <td className="px-2 py-4 text-sm text-gray-900" style={{width: '15%'}}>
-                    <div className="text-xs">
-                      <div className="truncate">
-                        {formatDateFromISO(booking.zeitraum_von)}
-                      </div>
-                      <div className="truncate">
-                        {booking.zeitraum_bis && formatDateFromISO(booking.zeitraum_bis) !== '31.12.2099' ? 
-                          `bis ${formatDateFromISO(booking.zeitraum_bis)}` : 
-                          <span className="text-blue-600 font-medium">🔄 Abo (unbefristet)</span>
-                        }
-                      </div>
+                  <td className="px-2 py-4 text-sm text-gray-900" style={{width: '12%'}}>
+                    <div className="truncate" title={booking.product_name}>
+                      {booking.product_name || '-'}
+                    </div>
+                  </td>
+                  <td className="px-2 py-4 text-sm text-gray-900" style={{width: '10%'}}>
+                    <div className="truncate" title={booking.location_name}>
+                      {booking.location_name || '-'}
+                    </div>
+                  </td>
+                  <td className="px-2 py-4 text-sm text-gray-900" style={{width: '12%'}}>
+                    <div className="truncate" title={booking.category_name}>
+                      {booking.category_name || '-'}
+                    </div>
+                  </td>
+                  <td className="px-2 py-4 text-sm text-gray-900" style={{width: '8%'}}>
+                    <div className="truncate" title={booking.campaign_name}>
+                      {booking.campaign_name || '-'}
                     </div>
                   </td>
                   <td className="px-1 py-4 text-center" style={{width: '8%'}}>
-                    <span className="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      ✅ Belegt
-                    </span>
-                  </td>
-                  <td className="px-1 py-4 text-center" style={{width: '10%'}}>
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium truncate ${
                       booking.status === 'gebucht' ? 'bg-green-100 text-green-800' :
                       booking.status === 'reserviert' ? 'bg-yellow-100 text-yellow-800' :
@@ -446,12 +418,12 @@ const BookingOverview = () => {
                       {booking.status}
                     </span>
                   </td>
-                  <td className="px-2 py-4 text-sm text-gray-900" style={{width: '12%'}}>
+                  <td className="px-2 py-4 text-sm text-gray-900" style={{width: '10%'}}>
                     <div className="truncate" title={booking.berater}>
                       {booking.berater}
                     </div>
                   </td>
-                  <td className="px-2 py-4 text-sm text-gray-900 text-right" style={{width: '12%'}}>
+                  <td className="px-2 py-4 text-sm text-gray-900 text-right" style={{width: '10%'}}>
                     <div className="text-xs truncate">
                       {booking.verkaufspreis ? 
                         `${parseFloat(booking.verkaufspreis).toLocaleString('de-DE', {
@@ -462,7 +434,7 @@ const BookingOverview = () => {
                       }
                     </div>
                   </td>
-                  <td className="px-1 py-4 text-center" style={{width: '8%'}}>
+                  <td className="px-1 py-4 text-center" style={{width: '5%'}}>
                     <div className="flex gap-1 justify-center">
                       {isAdmin() && (
                         <>

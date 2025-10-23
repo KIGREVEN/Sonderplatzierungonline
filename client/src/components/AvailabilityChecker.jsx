@@ -1,90 +1,87 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import DatePicker from './DatePicker';
 
 const AvailabilityChecker = () => {
   const { apiRequest } = useAuth();
+  
   const [checkData, setCheckData] = useState({
-    zeitraum_von: '',
-    zeitraum_bis: '',
-    belegung: ''
+    platform_id: '',
+    article_type_id: '',
+    location_id: '',
+    category_id: '',
+    campaign_id: ''
   });
 
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState(null);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [platforms, setPlatforms] = useState([]);
+  const [articleTypes, setArticleTypes] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
 
-  // Load categories from API
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
+  const [message, setMessage] = useState({ type: '', text: '' });
+
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchInitialData = async () => {
       try {
-        setCategoriesLoading(true);
-        const response = await apiRequest('/api/categories');
-        
-        if (response.ok) {
-          const data = await response.json();
-          const categoriesArray = Array.isArray(data.data) ? data.data : [];
-          setCategories(categoriesArray);
-        } else {
-          setCategories([]);
+        const [pRes, catRes, locRes, campRes] = await Promise.all([
+          apiRequest('/api/platforms?active_only=true'),
+          apiRequest('/api/categories?active_only=true'),
+          apiRequest('/api/locations?active_only=true'),
+          apiRequest('/api/campaigns?active_only=true')
+        ]);
+
+        if (pRes.ok) {
+          const data = await pRes.json();
+          setPlatforms(data.data || []);
+        }
+        if (catRes.ok) {
+          const data = await catRes.json();
+          setCategories(data.data || []);
+        }
+        if (locRes.ok) {
+          const data = await locRes.json();
+          setLocations(data.data || []);
+        }
+        if (campRes.ok) {
+          const data = await campRes.json();
+          setCampaigns(data.data || []);
         }
       } catch (error) {
-        console.error('Error loading categories:', error);
-        setCategories([]);
-      } finally {
-        setCategoriesLoading(false);
+        console.error('Error loading initial data:', error);
       }
     };
 
-    fetchCategories();
+    fetchInitialData();
   }, [apiRequest]);
 
-  // Handler for DatePicker components
-  const handleDateChange = (name) => (value) => {
-    setCheckData(prev => {
-      const newData = {
-        ...prev,
-        [name]: value
-      };
-      
-      // Automatic calculation of end date when start date changes
-      if (name === 'zeitraum_von' && value && isValidDateFormat(value)) {
-        const endDate = calculateEndDate(value);
-        newData.zeitraum_bis = endDate;
+  useEffect(() => {
+    const fetchArticleTypes = async () => {
+      if (!checkData.platform_id) {
+        setArticleTypes([]);
+        return;
       }
-      
-      return newData;
-    });
-  };
 
-  // Calculate end date (12 months later)
-  const calculateEndDate = (startDateString) => {
-    try {
-      const [day, month, year] = startDateString.split('.').map(Number);
-      const startDate = new Date(year, month - 1, day); // month is 0-based
-      
-      // Add 12 months
-      const endDate = new Date(startDate);
-      endDate.setFullYear(endDate.getFullYear() + 1);
-      
-      // Format back to German format
-      const endDay = endDate.getDate().toString().padStart(2, '0');
-      const endMonth = (endDate.getMonth() + 1).toString().padStart(2, '0');
-      const endYear = endDate.getFullYear();
-      
-      return `${endDay}.${endMonth}.${endYear}`;
-    } catch (error) {
-      console.error('Error calculating end date:', error);
-      return '';
-    }
-  };
+      try {
+        const platform = platforms.find(p => p.id === parseInt(checkData.platform_id));
+        if (!platform) return;
 
-  // Handler for Select dropdown - FIXED: Proper select validation
-  const handleSelectChange = (e) => {
+        const res = await apiRequest(`/api/article-types?platform_key=${encodeURIComponent(platform.key)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setArticleTypes(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error loading article types:', error);
+      }
+    };
+
+    fetchArticleTypes();
+    setCheckData(prev => ({ ...prev, article_type_id: '' }));
+  }, [checkData.platform_id, platforms, apiRequest]);
+
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCheckData(prev => ({
       ...prev,
@@ -92,140 +89,14 @@ const AvailabilityChecker = () => {
     }));
   };
 
-  // Handler for searchable dropdown
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setCheckData(prev => ({
-      ...prev,
-      belegung: value
-    }));
-    
-    // Filter categories based on search input
-    if (value.trim() === '') {
-      setFilteredCategories(categories);
-    } else {
-      const filtered = categories.filter(cat => 
-        cat.name.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredCategories(filtered);
-    }
-    setShowDropdown(true);
-  };
-
-  // Handler for category selection
-  const handleCategorySelect = (categoryName) => {
-    setCheckData(prev => ({
-      ...prev,
-      belegung: categoryName
-    }));
-    setShowDropdown(false);
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('.relative')) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Initialize filtered categories when categories load
-  useEffect(() => {
-    setFilteredCategories(categories);
-  }, [categories]);
-
-  // Validation for German date format
-  const isValidDateFormat = (dateString) => {
-    const regex = /^\d{2}\.\d{2}\.\d{4}$/;
-    return regex.test(dateString);
-  };
-
-  // Convert German date format (dd.mm.yyyy) to ISO 8601
-  const convertDateToISO = (dateString, isEndDate = false) => {
-    if (!dateString || dateString.trim() === '') {
-      // For subscription bookings: Automatically set 31.12.2099 if end date is empty
-      if (isEndDate) {
-        return '2099-12-31T23:59:59.000Z'; // Subscription date: 31.12.2099
-      }
-      return null; // Start date cannot be empty
-    }
-    
-    // Parse German format: dd.mm.yyyy
-    const [day, month, year] = dateString.split('.');
-    
-    // Validate parts
-    if (!day || !month || !year) {
-      // Fallback for subscription bookings
-      if (isEndDate) {
-        return '2099-12-31T23:59:59.000Z';
-      }
-      return null;
-    }
-    
-    // Create ISO 8601 format
-    // Start date: 00:00:00, End date: 23:59:59 for full day coverage
-    const time = isEndDate ? '23:59:59.000Z' : '00:00:00.000Z';
-    const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${time}`;
-    
-    return isoDate;
-  };
-
-  // Format date from ISO to dd.mm.yyyy
-  const formatDateFromISO = (isoString) => {
-    if (!isoString) return '';
-    const date = new Date(isoString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
-  };
-
   const validateForm = () => {
     const errors = [];
-
-    if (!checkData.zeitraum_von) {
-      errors.push('Startdatum ist erforderlich');
-    } else if (!isValidDateFormat(checkData.zeitraum_von)) {
-      errors.push('Startdatum muss im Format tt.mm.jjjj eingegeben werden');
-    }
-
-    if (!checkData.zeitraum_bis) {
-      errors.push('Enddatum ist erforderlich');
-    } else if (!isValidDateFormat(checkData.zeitraum_bis)) {
-      errors.push('Enddatum muss im Format tt.mm.jjjj eingegeben werden');
-    }
-
-    // Check if end date is after start date
-    if (checkData.zeitraum_von && checkData.zeitraum_bis && 
-        isValidDateFormat(checkData.zeitraum_von) && isValidDateFormat(checkData.zeitraum_bis)) {
-      const [startDay, startMonth, startYear] = checkData.zeitraum_von.split('.').map(Number);
-      const [endDay, endMonth, endYear] = checkData.zeitraum_bis.split('.').map(Number);
-      
-      const startDate = new Date(startYear, startMonth - 1, startDay);
-      const endDate = new Date(endYear, endMonth - 1, endDay);
-      
-      if (endDate < startDate) {
-        errors.push('Enddatum muss nach dem Startdatum liegen');
-      }
-    }
-
-    if (!checkData.belegung || checkData.belegung.trim() === '') {
-      errors.push('Belegung/Branche ist erforderlich');
-    }
-
-    // FIXED: Validate that the selected occupation exists in available categories
-    if (checkData.belegung && categories.length > 0) {
-      const validCategory = categories.find(cat => cat.name === checkData.belegung);
-      if (!validCategory) {
-        errors.push('Bitte wählen Sie eine gültige Belegung/Branche aus der Liste');
-      }
-    }
+    
+    if (!checkData.platform_id) errors.push('Plattform');
+    if (!checkData.article_type_id) errors.push('Artikel-Typ');
+    if (!checkData.location_id) errors.push('Ort');
+    if (!checkData.category_id) errors.push('Belegung (Branche)');
+    if (!checkData.campaign_id) errors.push('Kampagne');
 
     return errors;
   };
@@ -235,47 +106,77 @@ const AvailabilityChecker = () => {
     
     const errors = validateForm();
     if (errors.length > 0) {
-      setMessage({ type: 'error', text: errors.join(', ') });
+      setMessage({ 
+        type: 'error', 
+        text: 'Bitte füllen Sie alle Felder aus: ' + errors.join(', ') 
+      });
       return;
     }
 
     setLoading(true);
     setMessage({ type: '', text: '' });
-    setResults(null);
+    setResults([]);
 
     try {
-      // Convert data for API - new anonymous placement logic
-      const apiData = {
-        zeitraum_von: convertDateToISO(checkData.zeitraum_von, false),
-        zeitraum_bis: convertDateToISO(checkData.zeitraum_bis, true),
-        belegung: checkData.belegung
-      };
+      const productsRes = await apiRequest(`/api/products?articleTypeId=${checkData.article_type_id}&active_only=true`);
+      
+      if (!productsRes.ok) {
+        setMessage({ type: 'error', text: 'Fehler beim Laden der Artikel' });
+        setLoading(false);
+        return;
+      }
 
-      console.log('Checking availability for period:', apiData);
+      const productsData = await productsRes.json();
+      const products = productsData.data || [];
 
-      const response = await apiRequest(`/api/availability/check?${new URLSearchParams(apiData)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+      if (products.length === 0) {
+        setMessage({ type: 'info', text: 'Keine Artikel für diesen Artikel-Typ gefunden' });
+        setLoading(false);
+        return;
+      }
+
+      const availabilityResults = await Promise.all(
+        products.map(async (product) => {
+          const queryParams = new URLSearchParams({
+            platform_id: checkData.platform_id,
+            product_id: product.id,
+            location_id: checkData.location_id,
+            category_id: checkData.category_id,
+            campaign_id: checkData.campaign_id
+          });
+
+          const bookingRes = await apiRequest(`/api/bookings?${queryParams}`);
+          
+          if (bookingRes.ok) {
+            const bookingData = await bookingRes.json();
+            const existingBookings = bookingData.data || [];
+            
+            return {
+              product: product,
+              is_available: existingBookings.length === 0,
+              booking: existingBookings.length > 0 ? existingBookings[0] : null
+            };
+          }
+          
+          return {
+            product: product,
+            is_available: null,
+            booking: null,
+            error: true
+          };
+        })
+      );
+
+      setResults(availabilityResults);
+      
+      const availableCount = availabilityResults.filter(r => r.is_available).length;
+      const bookedCount = availabilityResults.filter(r => !r.is_available && !r.error).length;
+      
+      setMessage({ 
+        type: 'success', 
+        text: `Prüfung abgeschlossen: ${availableCount} verfügbar, ${bookedCount} belegt` 
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setResults(data.data);
-        
-        const { available_places, occupied_places, message } = data.data;
-        
-        setMessage({ 
-          type: 'success', 
-          text: `Prüfung abgeschlossen: ${message}`
-        });
-        
-        console.log('Availability check successful:', data.data);
-      } else {
-        setMessage({ type: 'error', text: data.message || 'Fehler bei der Verfügbarkeitsprüfung' });
-      }
     } catch (error) {
       console.error('Error during availability check:', error);
       setMessage({ type: 'error', text: 'Netzwerkfehler bei der Verfügbarkeitsprüfung' });
@@ -284,174 +185,236 @@ const AvailabilityChecker = () => {
     }
   };
 
+  const platform = platforms.find(p => p.id === parseInt(checkData.platform_id));
+  const articleType = articleTypes.find(at => at.id === parseInt(checkData.article_type_id));
+  const location = locations.find(l => l.id === parseInt(checkData.location_id));
+  const category = categories.find(c => c.id === parseInt(checkData.category_id));
+  const campaign = campaigns.find(c => c.id === parseInt(checkData.campaign_id));
+
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Form */}
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold mb-6 text-gray-800">
           🔍 Verfügbarkeitsprüfung
         </h1>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Time Period */}
+        <p className="text-gray-600 mb-6">
+          Wählen Sie Plattform, Artikel-Typ, Ort, Belegung und Kampagne aus, um zu sehen, welche Artikel verfügbar oder belegt sind.
+        </p>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-                📅 Startdatum *
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Plattform *
               </label>
-              <DatePicker
-                value={checkData.zeitraum_von}
-                onChange={handleDateChange('zeitraum_von')}
-                placeholder="tt.mm.jjjj (z.B. 15.07.2024)"
-                name="zeitraum_von"
+              <select
+                name="platform_id"
+                value={checkData.platform_id}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 required
-              />
-              <p className="text-xs text-gray-500 mt-1">Format: tt.mm.jjjj</p>
+              >
+                <option value="">-- Plattform wählen --</option>
+                {platforms.map(platform => (
+                  <option key={platform.id} value={platform.id}>
+                    {platform.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-                📅 Enddatum *
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Artikel-Typ *
               </label>
-              <DatePicker
-                value={checkData.zeitraum_bis}
-                onChange={handleDateChange('zeitraum_bis')}
-                placeholder="tt.mm.jjjj (z.B. 20.07.2024)"
-                name="zeitraum_bis"
+              <select
+                name="article_type_id"
+                value={checkData.article_type_id}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 required
-              />
-              <p className="text-xs text-gray-500 mt-1">Format: tt.mm.jjjj (automatisch auf +12 Monate gesetzt)</p>
+                disabled={!checkData.platform_id}
+              >
+                <option value="">-- Artikel-Typ wählen --</option>
+                {articleTypes.map(type => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Ort *
+              </label>
+              <select
+                name="location_id"
+                value={checkData.location_id}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                required
+              >
+                <option value="">-- Ort wählen --</option>
+                {locations.map(location => (
+                  <option key={location.id} value={location.id}>
+                    {location.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Belegung (Branche) *
+              </label>
+              <select
+                name="category_id"
+                value={checkData.category_id}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                required
+              >
+                <option value="">-- Belegung wählen --</option>
+                {categories.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Kampagne *
+              </label>
+              <select
+                name="campaign_id"
+                value={checkData.campaign_id}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                required
+              >
+                <option value="">-- Kampagne wählen --</option>
+                {campaigns.map(campaign => (
+                  <option key={campaign.id} value={campaign.id}>
+                    {campaign.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* FIXED: Belegung/Branche - Durchsuchbares Dropdown */}
-          <div>
-            <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-              🏢 Belegung/Branche *
-            </label>
-            {categoriesLoading ? (
-              <div className="w-full p-3 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
-                ⏳ Kategorien werden geladen...
-              </div>
-            ) : (
-              <div className="relative">
-                <input
-                  type="text"
-                  name="belegung"
-                  value={checkData.belegung}
-                  onChange={handleSearchChange}
-                  onFocus={() => setShowDropdown(true)}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white"
-                  placeholder="-- Bitte wählen Sie eine Belegung/Branche --"
-                  autoComplete="off"
-                  required
-                />
-                {showDropdown && filteredCategories.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    {filteredCategories.slice(0, 50).map(cat => (
-                      <div
-                        key={cat.id}
-                        onClick={() => handleCategorySelect(cat.name)}
-                        className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                      >
-                        {cat.name}
-                      </div>
-                    ))}
-                    {filteredCategories.length > 50 && (
-                      <div className="p-3 text-gray-500 text-sm text-center border-t border-gray-200">
-                        ... und {filteredCategories.length - 50} weitere Kategorien. Bitte verfeinern Sie Ihre Suche.
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-            <p className="text-xs text-gray-500 mt-1">
-              Nur verfügbare Kategorien aus der Datenbank können ausgewählt werden. Tippen Sie, um zu suchen.
-            </p>
-          </div>
-
-          {/* Message */}
           {message.text && (
             <div className={`p-4 rounded-md ${
-              message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              message.type === 'success' ? 'bg-green-100 text-green-700' : 
+              message.type === 'info' ? 'bg-blue-100 text-blue-700' :
+              'bg-red-100 text-red-700'
             }`}>
               {message.text}
             </div>
           )}
 
-          {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading || categoriesLoading}
+            disabled={loading}
             className="w-full bg-red-600 text-white py-3 px-6 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading ? '⏳ Verfügbarkeit wird geprüft...' : '🔍 Verfügbarkeit prüfen'}
+            {loading ? '⏳ Prüfe Verfügbarkeit...' : '🔍 Verfügbarkeit prüfen'}
           </button>
         </form>
       </div>
 
-      {/* Results */}
-      {results && (
+      {results.length > 0 && (
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            📊 Verfügbarkeitsergebnisse für {results.belegung}
+          <h2 className="text-xl font-semibold mb-4">
+            📊 Verfügbarkeit für: {articleType?.name}
           </h2>
           
-          <div className="mb-6">
-            <p className="text-gray-700 mb-2">
-              <strong>Zeitraum:</strong> {formatDateFromISO(results.zeitraum_von)} bis {formatDateFromISO(results.zeitraum_bis)}
-            </p>
-            <p className="text-gray-700">
-              <strong>Belegung:</strong> {results.belegung}
-            </p>
+          <div className="mb-4 text-sm text-gray-600 space-y-1">
+            <p><strong>Plattform:</strong> {platform?.name}</p>
+            <p><strong>Ort:</strong> {location?.name}</p>
+            <p><strong>Belegung:</strong> {category?.name}</p>
+            <p><strong>Kampagne:</strong> {campaign?.label}</p>
           </div>
 
-          {/* Availability Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="text-center bg-green-50 p-4 rounded-lg border border-green-200">
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {results.available_places}
-              </div>
-              <div className="text-sm text-green-700 font-medium">Verfügbare Plätze</div>
-            </div>
-            
-            <div className="text-center bg-red-50 p-4 rounded-lg border border-red-200">
-              <div className="text-3xl font-bold text-red-600 mb-2">
-                {results.occupied_places}
-              </div>
-              <div className="text-sm text-red-700 font-medium">Belegte Plätze</div>
-            </div>
-            
-            <div className="text-center bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <div className="text-3xl font-bold text-blue-600 mb-2">
-                {results.total_places}
-              </div>
-              <div className="text-sm text-blue-700 font-medium">Gesamte Plätze</div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-6">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Occupancy</span>
-              <span>{results.occupied_places} of {results.total_places} places</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-4">
+          <div className="space-y-3">
+            {results.map((result, index) => (
               <div 
-                className="bg-red-500 h-4 rounded-full transition-all duration-300"
-                style={{width: `${(results.occupied_places / results.total_places) * 100}%`}}
-              ></div>
-            </div>
-          </div>
+                key={index} 
+                className={`p-4 rounded-lg border-2 ${
+                  result.is_available 
+                    ? 'bg-green-50 border-green-200' 
+                    : 'bg-red-50 border-red-200'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-2xl">
+                        {result.is_available ? '✅' : '❌'}
+                      </span>
+                      <div>
+                        <h3 className={`font-bold text-lg ${
+                          result.is_available ? 'text-green-800' : 'text-red-800'
+                        }`}>
+                          {result.product.name}
+                        </h3>
+                        <p className={`text-sm ${
+                          result.is_available ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {result.is_available ? 'Verfügbar' : 'Belegt'}
+                        </p>
+                      </div>
+                    </div>
 
-          {/* Status Message */}
-          <div className={`p-4 rounded-lg text-center font-medium ${
-            results.is_available 
-              ? 'bg-green-100 text-green-800 border border-green-200' 
-              : 'bg-red-100 text-red-800 border border-red-200'
-          }`}>
-            {results.is_available ? '✅' : '❌'} {results.message}
+                    {!result.is_available && result.booking && (
+                      <div className="mt-3 ml-11 p-3 bg-white rounded border border-gray-200">
+                        <h4 className="font-semibold text-gray-800 mb-2 text-sm">Buchungsinformationen:</h4>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="text-gray-600">Kunde:</span>
+                            <p className="font-medium">{result.booking.kundenname}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Kundennummer:</span>
+                            <p className="font-medium">{result.booking.kundennummer}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Berater:</span>
+                            <p className="font-medium">{result.booking.berater}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Status:</span>
+                            <p className="font-medium">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                result.booking.status === 'gebucht' ? 'bg-green-100 text-green-800' :
+                                result.booking.status === 'reserviert' ? 'bg-blue-100 text-blue-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {result.booking.status}
+                              </span>
+                            </p>
+                          </div>
+                          {result.booking.verkaufspreis && (
+                            <div>
+                              <span className="text-gray-600">Verkaufspreis:</span>
+                              <p className="font-medium">
+                                {new Intl.NumberFormat('de-DE', { 
+                                  style: 'currency', 
+                                  currency: 'EUR' 
+                                }).format(result.booking.verkaufspreis)}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -460,4 +423,3 @@ const AvailabilityChecker = () => {
 };
 
 export default AvailabilityChecker;
-

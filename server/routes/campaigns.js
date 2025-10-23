@@ -7,7 +7,16 @@ const { query } = require('../config/database');
 // GET /campaigns
 router.get('/', optionalAuth, async (req, res, next) => {
   try {
-    const campaigns = await Campaign.findAll();
+    const activeOnly = req.query.active_only === 'true';
+    let campaigns;
+    
+    if (activeOnly) {
+      const result = await query('SELECT * FROM campaigns WHERE is_active = true ORDER BY label ASC');
+      campaigns = result.rows;
+    } else {
+      campaigns = await Campaign.findAll();
+    }
+    
     res.json({ success: true, data: campaigns });
   } catch (error) {
     next(error);

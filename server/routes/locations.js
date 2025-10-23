@@ -4,11 +4,29 @@ const Location = require('../models/Location');
 const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware/auth');
 const { query } = require('../config/database');
 
-// GET /locations?search=
+// GET /locations?search=&active_only=
 router.get('/', optionalAuth, async (req, res, next) => {
   try {
     const search = req.query.search;
-    const locations = await Location.findAll(search);
+    const activeOnly = req.query.active_only === 'true';
+    
+    let locations;
+    if (activeOnly) {
+      let queryText = 'SELECT * FROM locations WHERE is_active = true';
+      const params = [];
+      
+      if (search) {
+        queryText += ' AND name ILIKE $1';
+        params.push(`%${search}%`);
+      }
+      
+      queryText += ' ORDER BY name ASC';
+      const result = await query(queryText, params);
+      locations = result.rows;
+    } else {
+      locations = await Location.findAll(search);
+    }
+    
     res.json({ success: true, data: locations });
   } catch (error) {
     next(error);

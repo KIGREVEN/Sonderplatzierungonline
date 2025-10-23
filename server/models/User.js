@@ -8,6 +8,7 @@ class User {
     this.username = data.username;
     this.password_hash = data.password_hash;
     this.role = data.role;
+    this.is_active = data.is_active === undefined ? true : data.is_active;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
   }
@@ -79,7 +80,7 @@ class User {
   // Alle Benutzer abrufen (ohne Passwort-Hash)
   static async findAll() {
     const result = await query(
-      'SELECT id, username, role, created_at, updated_at FROM users ORDER BY created_at DESC'
+      'SELECT id, username, role, is_active, created_at, updated_at FROM users ORDER BY created_at DESC'
     );
 
     return result.rows.map(row => new User(row));
@@ -123,6 +124,7 @@ class User {
       id: this.id,
       username: this.username,
       role: this.role,
+      is_active: this.is_active,
       created_at: this.created_at,
       updated_at: this.updated_at
     };

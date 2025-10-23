@@ -3,7 +3,12 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  host: 'localhost',
+  port: 5432,
+  database: 'sp_db',
+  user: 'sp_user',
+  password: 'sp_pass',
+  ssl: false
 });
 
 async function createAdminUser() {

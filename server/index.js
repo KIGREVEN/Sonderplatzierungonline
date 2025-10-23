@@ -18,6 +18,8 @@ const platformsRoutes = require('./routes/platforms');
 const productsRoutes = require('./routes/products');
 const locationsRoutes = require('./routes/locations');
 const campaignsRoutes = require('./routes/campaigns');
+const articleTypesRoutes = require('./routes/articleTypes');
+const usersRoutes = require('./routes/users');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -75,12 +77,13 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// CORS configuration - allow all origins for Render deployment
+// CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || true, // Allow all origins by default
+  origin: ['http://localhost:5173', 'http://217.110.253.198:5173'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Access-Control-Allow-Origin']
 }));
 
 // Compression middleware
@@ -101,7 +104,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    service: 'Köln Branchen Portal API',
+    service: 'Sonderplatzierung Online API',
     version: '1.0.0'
   });
 });
@@ -193,6 +196,8 @@ app.use('/api/platforms', platformsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/locations', locationsRoutes);
 app.use('/api/campaigns', campaignsRoutes);
+app.use('/api/article-types', articleTypesRoutes);
+app.use('/api/users', usersRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -261,7 +266,7 @@ const cleanupExpiredReservations = async () => {
 
 // Initialize database and start server
 const startServer = async () => {
-  console.log('🚀 Starting Köln Branchen Portal API...');
+  console.log('🚀 Starting Sonderplatzierung Online API...');
   
   // Initialize database
   await initializeDatabase();
@@ -273,7 +278,7 @@ const startServer = async () => {
   
   // Start server
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Sonderplatzierung Online Server running on port ${PORT}`);
     console.log(`📊 Health check: http://localhost:${PORT}/health`);
     console.log(`🗄️ Database status: http://localhost:${PORT}/api/db-status`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);

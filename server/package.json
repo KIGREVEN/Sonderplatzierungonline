@@ -1,7 +1,7 @@
 {
-  "name": "koeln-branchen-server",
+  "name": "sonderplatzierung-online-server",
   "version": "1.0.0",
-  "description": "Backend API for Köln Branchen Portal booking management system",
+  "description": "Backend API for Sonderplatzierung Online management system",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

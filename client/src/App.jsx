@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom'
-import { Plus, Search, List, Menu, X } from 'lucide-react'
+import { Plus, Search, List, Menu, X, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { AuthProvider } from './context/AuthContext'
@@ -12,7 +12,9 @@ import AvailabilityChecker from './components/AvailabilityChecker'
 import ProductsPage from './components/ProductsPage'
 import LocationsPage from './components/LocationsPage'
 import CampaignsPage from './components/CampaignsPage'
+import CategoriesPage from './components/CategoriesPage'
 import BookingsPage from './components/BookingsPage'
+import UsersPage from './components/UsersPage'
 import { useAuth } from './context/AuthContext'
 import './App.css'
 
@@ -29,33 +31,15 @@ function RoleBasedRedirect() {
 
 function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isVerwaltungOpen, setIsVerwaltungOpen] = useState(false)
   const location = useLocation()
   const { isAuthenticated, isAdmin, hasPermission } = useAuth()
 
-  // Rollenbasierte Navigation
-  const getNavItems = () => {
-    const baseItems = []
-
-    // Nur Admins können Übersicht und neue Buchungen sehen
-    if (isAdmin()) {
-      baseItems.push({ path: '/overview', label: 'Übersicht', icon: List, permission: 'read' })
-      baseItems.push({ path: '/booking', label: 'Neue Buchung', icon: Plus, permission: 'create' })
-    }
-
-    // Entities: Products, Locations, Campaigns
-    baseItems.push({ path: '/products', label: 'Produkte', icon: List, permission: 'read' })
-    baseItems.push({ path: '/locations', label: 'Orte', icon: List, permission: 'read' })
-    baseItems.push({ path: '/campaigns', label: 'Kampagnen', icon: List, permission: 'read' })
-    baseItems.push({ path: '/bookings', label: 'Buchungen', icon: List, permission: 'read' })
-
-    // Alle authentifizierten Benutzer können Verfügbarkeit prüfen
-    baseItems.push({ path: '/availability', label: 'Verfügbarkeit', icon: Search, permission: 'availability' })
-
-    return baseItems.filter(item => hasPermission(item.permission))
-  }
-
-  const navItems = getNavItems()
   const isActive = (path) => location.pathname === path
+  const isVerwaltungActive = () => {
+    const verwaltungPaths = ['/products', '/locations', '/campaigns', '/categories', '/bookings', '/users']
+    return verwaltungPaths.includes(location.pathname)
+  }
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -64,8 +48,8 @@ function Navigation() {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <img 
-                src="/koeln-branchen-logo.png" 
-                alt="Köln Branchen Guide" 
+                src="/greven-medien-logo.png" 
+                alt="Greven Medien" 
                 className="h-10 w-auto"
               />
             </Link>
@@ -73,23 +57,112 @@ function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(item.path)
-                      ? 'bg-red-100 text-red-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </Link>
-              )
-            })}
+            {/* Übersicht */}
+            {isAdmin() && (
+              <Link
+                to="/overview"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/overview')
+                    ? 'bg-red-100 text-red-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <List className="h-4 w-4" />
+                <span>Übersicht</span>
+              </Link>
+            )}
+
+            {/* Neue Buchung */}
+            {isAdmin() && (
+              <Link
+                to="/booking"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/booking')
+                    ? 'bg-red-100 text-red-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Neue Buchung</span>
+              </Link>
+            )}
+
+            {/* Verwaltung Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsVerwaltungOpen(!isVerwaltungOpen)}
+                onBlur={() => setTimeout(() => setIsVerwaltungOpen(false), 200)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isVerwaltungActive()
+                    ? 'bg-red-100 text-red-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <List className="h-4 w-4" />
+                <span>Verwaltung</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isVerwaltungOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {isVerwaltungOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
+                  <Link
+                    to="/products"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsVerwaltungOpen(false)}
+                  >
+                    Artikel
+                  </Link>
+                  <Link
+                    to="/locations"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsVerwaltungOpen(false)}
+                  >
+                    Orte
+                  </Link>
+                  <Link
+                    to="/campaigns"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsVerwaltungOpen(false)}
+                  >
+                    Kampagnen
+                  </Link>
+                  <Link
+                    to="/categories"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsVerwaltungOpen(false)}
+                  >
+                    Branchen
+                  </Link>
+                  <Link
+                    to="/bookings"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsVerwaltungOpen(false)}
+                  >
+                    Buchungen
+                  </Link>
+                  <Link
+                    to="/users"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsVerwaltungOpen(false)}
+                  >
+                    Benutzer
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Verfügbarkeit */}
+            <Link
+              to="/availability"
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/availability')
+                  ? 'bg-red-100 text-red-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <Search className="h-4 w-4" />
+              <span>Verfügbarkeit</span>
+            </Link>
             
             {/* User Profile */}
             {isAuthenticated() && (
@@ -118,24 +191,126 @@ function Navigation() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {navItems.map((item) => {
-                const Icon = item.icon
-                return (
+              {/* Übersicht */}
+              {isAdmin() && (
+                <Link
+                  to="/overview"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    isActive('/overview')
+                      ? 'bg-red-100 text-red-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <List className="h-5 w-5" />
+                  <span>Übersicht</span>
+                </Link>
+              )}
+
+              {/* Neue Buchung */}
+              {isAdmin() && (
+                <Link
+                  to="/booking"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    isActive('/booking')
+                      ? 'bg-red-100 text-red-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Neue Buchung</span>
+                </Link>
+              )}
+
+              {/* Verwaltung - Mobile */}
+              <div className="px-3 py-2">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Verwaltung
+                </div>
+                <div className="space-y-1">
                   <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                      isActive(item.path)
+                    to="/products"
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive('/products')
                         ? 'bg-red-100 text-red-700'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.label}</span>
+                    Artikel
                   </Link>
-                )
-              })}
+                  <Link
+                    to="/locations"
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive('/locations')
+                        ? 'bg-red-100 text-red-700'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Orte
+                  </Link>
+                  <Link
+                    to="/campaigns"
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive('/campaigns')
+                        ? 'bg-red-100 text-red-700'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Kampagnen
+                  </Link>
+                  <Link
+                    to="/categories"
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive('/categories')
+                        ? 'bg-red-100 text-red-700'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Branchen
+                  </Link>
+                  <Link
+                    to="/bookings"
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive('/bookings')
+                        ? 'bg-red-100 text-red-700'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Buchungen
+                  </Link>
+                  <Link
+                    to="/users"
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive('/users')
+                        ? 'bg-red-100 text-red-700'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Benutzer
+                  </Link>
+                </div>
+              </div>
+
+              {/* Verfügbarkeit */}
+              <Link
+                to="/availability"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  isActive('/availability')
+                    ? 'bg-red-100 text-red-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Search className="h-5 w-5" />
+                <span>Verfügbarkeit</span>
+              </Link>
             </div>
           </div>
         )}
@@ -377,7 +552,16 @@ function App() {
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/locations" element={<LocationsPage />} />
                 <Route path="/campaigns" element={<CampaignsPage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/bookings" element={<BookingsPage />} />
+                <Route 
+                  path="/users" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <UsersPage />
+                    </ProtectedRoute>
+                  } 
+                />
                 <Route path="/dashboard" element={<Dashboard />} />
                 {/* Redirect für unbekannte Routen */}
                 <Route path="*" element={<Navigate to="/" replace />} />

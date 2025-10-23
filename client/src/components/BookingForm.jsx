@@ -1,88 +1,123 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import DatePicker from './DatePicker';
 
 const BookingForm = ({ onBookingCreated }) => {
   const { user, apiRequest } = useAuth();
+  
+  // Form state - SIMPLIFIED (no dates!)
   const [formData, setFormData] = useState({
     kundenname: '',
     kundennummer: '',
-    belegung: '',
-    zeitraum_von: '',
-    zeitraum_bis: '',
+    platform_id: '',
+    article_type_id: '',
+    product_id: '',
+    category_id: '',
+    location_id: '',
+    campaign_id: '',
     status: 'reserviert',
     berater: '',
     verkaufspreis: ''
   });
 
-  const [platforms, setPlatforms] = useState([])
-  const [products, setProducts] = useState([])
-  const [locationsList, setLocationsList] = useState([])
-  const [campaigns, setCampaigns] = useState([])
+  // Data lists
+  const [platforms, setPlatforms] = useState([]);
+  const [articleTypes, setArticleTypes] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
 
+  // UI state
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-  const [categories, setCategories] = useState([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
-  // Lade Kategorien von der API
+  // Load initial data (platforms, categories, locations, campaigns)
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchInitialData = async () => {
       try {
-        setCategoriesLoading(true);
-        const response = await apiRequest('/api/categories');
-        
-        if (response.ok) {
-          const data = await response.json();
-          // Backend gibt {success: true, data: [...]} zurück
-          const categoriesArray = Array.isArray(data.data) ? data.data : [];
-          setCategories(categoriesArray);
-          console.log('Kategorien erfolgreich geladen:', categoriesArray.length);
-        } else {
-          console.error('Fehler beim Laden der Kategorien:', response.status);
-          // Fallback zu leerer Liste
-          setCategories([]);
+        const [pRes, catRes, locRes, campRes] = await Promise.all([
+          apiRequest('/api/platforms?active_only=true'),
+          apiRequest('/api/categories?active_only=true'),
+          apiRequest('/api/locations?active_only=true'),
+          apiRequest('/api/campaigns?active_only=true')
+        ]);
+
+        if (pRes.ok) {
+          const data = await pRes.json();
+          setPlatforms(data.data || []);
+        }
+        if (catRes.ok) {
+          const data = await catRes.json();
+          setCategories(data.data || []);
+        }
+        if (locRes.ok) {
+          const data = await locRes.json();
+          setLocations(data.data || []);
+        }
+        if (campRes.ok) {
+          const data = await campRes.json();
+          setCampaigns(data.data || []);
         }
       } catch (error) {
-        console.error('Netzwerkfehler beim Laden der Kategorien:', error);
-        // Fallback zu leerer Liste
-        setCategories([]);
-      } finally {
-        setCategoriesLoading(false);
+        console.error('Error loading initial data:', error);
       }
     };
 
-    fetchCategories();
-    // Fetch platforms, locations and campaigns for new booking fields
-    const fetchAux = async () => {
-      try{
-        const [pRes, lRes, cRes] = await Promise.all([
-          apiRequest('/api/platforms'),
-          apiRequest('/api/locations'),
-          apiRequest('/api/campaigns')
-        ])
-
-        if(pRes.ok){ const pd = await pRes.json(); setPlatforms(pd.data || []) }
-        if(lRes.ok){ const ld = await lRes.json(); setLocationsList(ld.data || []) }
-        if(cRes.ok){ const cd = await cRes.json(); setCampaigns(cd.data || []) }
-      }catch(e){ console.error('Error fetching aux data', e) }
-    }
-
-    fetchAux();
+    fetchInitialData();
   }, [apiRequest]);
 
-  // When platformKey in formData changes, fetch products for that platform
+  // CASCADE: When platform changes, load article types for that platform
   useEffect(() => {
-    const key = formData.platformKey;
-    const fetchProducts = async (platformKey) => {
-      if (!platformKey) return setProducts([])
-      try{
-        const res = await apiRequest(`/api/products?platformKey=${encodeURIComponent(platformKey)}`)
-        if(res.ok){ const d = await res.json(); setProducts(d.data || []) }
-      }catch(e){ console.error('Error fetching products', e) }
-    }
-    fetchProducts(key)
-  }, [formData.platformKey, apiRequest])
+    const fetchArticleTypes = async () => {
+      if (!formData.platform_id) {
+        setArticleTypes([]);
+        setProducts([]);
+        return;
+      }
+
+      try {
+        // Find platform key from platform_id
+        const platform = platforms.find(p => p.id === parseInt(formData.platform_id));
+        if (!platform) return;
+
+        const res = await apiRequest(`/api/article-types?platform_key=${encodeURIComponent(platform.key)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setArticleTypes(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error loading article types:', error);
+      }
+    };
+
+    fetchArticleTypes();
+    // Reset dependent fields
+    setFormData(prev => ({ ...prev, article_type_id: '', product_id: '' }));
+  }, [formData.platform_id, platforms, apiRequest]);
+
+  // CASCADE: When article type changes, load products (articles) for that type
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!formData.article_type_id) {
+        setProducts([]);
+        return;
+      }
+
+      try {
+        const res = await apiRequest(`/api/products?articleTypeId=${formData.article_type_id}&active_only=true`);
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    };
+
+    fetchProducts();
+    // Reset product selection
+    setFormData(prev => ({ ...prev, product_id: '' }));
+  }, [formData.article_type_id, apiRequest]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -92,64 +127,19 @@ const BookingForm = ({ onBookingCreated }) => {
     }));
   };
 
-  // Spezielle Handler für DatePicker-Komponenten
-  const handleDateChange = (fieldName) => (value) => {
-    setFormData(prev => ({
-      ...prev,
-      [fieldName]: value
-    }));
-  };
-
   const validateForm = () => {
     const errors = [];
     
     if (!formData.kundenname.trim()) errors.push('Kundenname ist erforderlich');
     if (!formData.kundennummer.trim()) errors.push('Kundennummer ist erforderlich');
-    if (!formData.belegung.trim()) errors.push('Belegung ist erforderlich');
-    if (!formData.zeitraum_von.trim()) errors.push('Startdatum ist erforderlich');
+    if (!formData.platform_id) errors.push('Plattform ist erforderlich');
+    if (!formData.product_id) errors.push('Artikel ist erforderlich');
+    if (!formData.category_id) errors.push('Branche ist erforderlich');
+    if (!formData.location_id) errors.push('Ort ist erforderlich');
+    if (!formData.campaign_id) errors.push('Kampagne ist erforderlich');
     if (!formData.berater.trim()) errors.push('Berater ist erforderlich');
 
-    // Datumsvalidierung
-    const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
-    if (formData.zeitraum_von && !dateRegex.test(formData.zeitraum_von)) {
-      errors.push('Startdatum muss im Format tt.mm.jjjj sein');
-    }
-    // Enddatum ist optional (für Abo-Buchungen)
-    if (formData.zeitraum_bis && !dateRegex.test(formData.zeitraum_bis)) {
-      errors.push('Enddatum muss im Format tt.mm.jjjj sein');
-    }
-
     return errors;
-  };
-
-  // Konvertiert deutsches Datumsformat (dd.mm.yyyy) zu ISO 8601
-  const convertDateToISO = (dateString, isEndDate = false) => {
-    if (!dateString || dateString.trim() === '') {
-      // Für Abo-Buchungen: Automatisch 31.12.2099 setzen wenn Enddatum leer
-      if (isEndDate) {
-        return '2099-12-31T23:59:59.000Z'; // Abo-Datum: 31.12.2099
-      }
-      return null; // Startdatum darf nicht leer sein
-    }
-    
-    // Parse deutsches Format: dd.mm.yyyy
-    const [day, month, year] = dateString.split('.');
-    
-    // Validiere Teile
-    if (!day || !month || !year) {
-      // Fallback für Abo-Buchungen
-      if (isEndDate) {
-        return '2099-12-31T23:59:59.000Z';
-      }
-      return null;
-    }
-    
-    // Erstelle ISO 8601 Format
-    // Startdatum: 00:00:00, Enddatum: 23:59:59 für ganztägige Abdeckung
-    const time = isEndDate ? '23:59:59.000Z' : '00:00:00.000Z';
-    const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${time}`;
-    
-    return isoDate;
   };
 
   const handleSubmit = async (e) => {
@@ -159,7 +149,7 @@ const BookingForm = ({ onBookingCreated }) => {
     if (errors.length > 0) {
       setMessage({ 
         type: 'error', 
-        text: 'Bitte korrigieren Sie folgende Fehler: ' + errors.join(', ') 
+        text: 'Bitte füllen Sie alle Pflichtfelder aus: ' + errors.join(', ') 
       });
       return;
     }
@@ -168,21 +158,21 @@ const BookingForm = ({ onBookingCreated }) => {
     setMessage({ type: '', text: '' });
 
     try {
-      // Konvertiere Daten für Backend (deutsches Format -> ISO 8601)
       const apiData = {
-        ...formData,
-        platformKey: formData.platformKey || (platforms[0] && platforms[0].key) || null,
-        productKey: formData.productKey || null,
-        locationId: formData.locationId || (locationsList[0] && locationsList[0].id) || null,
-        campaignLabel: formData.campaignLabel || null,
-        zeitraum_von: convertDateToISO(formData.zeitraum_von, false),
-        zeitraum_bis: convertDateToISO(formData.zeitraum_bis, true) // Automatisch 31.12.2099 für Abo-Buchungen
-        // platzierung wird automatisch vom Backend vergeben
+        kundenname: formData.kundenname,
+        kundennummer: formData.kundennummer,
+        platform_id: parseInt(formData.platform_id),
+        product_id: parseInt(formData.product_id),
+        category_id: parseInt(formData.category_id),
+        location_id: parseInt(formData.location_id),
+        campaign_id: parseInt(formData.campaign_id),
+        status: formData.status,
+        berater: formData.berater,
+        verkaufspreis: formData.verkaufspreis ? parseFloat(formData.verkaufspreis) : null
       };
 
-      console.log('Sending data to backend:', apiData);
+      console.log('Sending simplified booking data:', apiData);
 
-      // Verwende apiRequest für authentifizierten API-Aufruf
       const response = await apiRequest('/api/bookings', {
         method: 'POST',
         headers: {
@@ -203,24 +193,28 @@ const BookingForm = ({ onBookingCreated }) => {
         setFormData({
           kundenname: '',
           kundennummer: '',
-          belegung: '',
-          platformKey: '',
-          productKey: '',
-          locationId: '',
-          campaignLabel: '',
-          zeitraum_von: '',
-          zeitraum_bis: '',
+          platform_id: '',
+          article_type_id: '',
+          product_id: '',
+          category_id: '',
+          location_id: '',
+          campaign_id: '',
           status: 'reserviert',
-          berater: ''
+          berater: '',
+          verkaufspreis: ''
         });
 
-        // Parent-Komponente benachrichtigen
         if (onBookingCreated) {
           onBookingCreated(data.data);
         }
       } else {
-        // Backend-Validierungsfehler behandeln
-        if (response.status === 400 && data.details) {
+        // Handle conflict error (double booking)
+        if (response.status === 409 || (data.error && data.error.name === 'ConflictError')) {
+          setMessage({ 
+            type: 'error', 
+            text: 'Die gewünschte Belegung ist bereits belegt.' 
+          });
+        } else if (response.status === 400 && data.details) {
           const errorMessages = data.details.map(detail => `${detail.field}: ${detail.message}`);
           setMessage({ 
             type: 'error', 
@@ -229,12 +223,12 @@ const BookingForm = ({ onBookingCreated }) => {
         } else {
           setMessage({ 
             type: 'error', 
-            text: data.message || `Fehler ${response.status}: ${response.statusText}` 
+            text: data.message || data.error || `Fehler ${response.status}` 
           });
         }
       }
     } catch (error) {
-      console.error('Fehler beim Erstellen der Buchung:', error);
+      console.error('Error creating booking:', error);
       setMessage({ 
         type: 'error', 
         text: 'Fehler beim Erstellen der Buchung: ' + error.message 
@@ -247,210 +241,247 @@ const BookingForm = ({ onBookingCreated }) => {
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        📝 Neue Buchung erstellen
+        Neue Buchung erstellen
       </h2>
 
       {message.text && (
-        <div className={`mb-4 p-3 rounded ${
-          message.type === 'success' 
-            ? 'bg-green-100 text-green-700 border border-green-300' 
-            : 'bg-red-100 text-red-700 border border-red-300'
-        }`}>
+        <div
+          className={`mb-4 p-4 rounded ${
+            message.type === 'success'
+              ? 'bg-green-100 text-green-700'
+              : 'bg-red-100 text-red-700'
+          }`}
+        >
           {message.text}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-              👤 Kundenname *
-            </label>
-            <input
-              type="text"
-              name="kundenname"
-              value={formData.kundenname}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="Max Mustermann"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-              🔢 Kundennummer *
-            </label>
-            <input
-              type="text"
-              name="kundennummer"
-              value={formData.kundennummer}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="K-12345"
-              required
-            />
-          </div>
-        </div>
-
+        {/* Kundenname */}
         <div>
-          <label className="block text-sm font-medium mb-1 flex items-center gap-2">🧭 Plattform</label>
-          <select name="platformKey" value={formData.platformKey || ''} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded">
-            <option value="">Bitte wählen</option>
-            {platforms.map(p=> <option key={p.key} value={p.key}>{p.name}</option>)}
-          </select>
-
-          <label className="block text-sm font-medium mb-1 flex items-center gap-2 mt-3">🔖 Produkt</label>
-          <select name="productKey" value={formData.productKey || ''} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded">
-            <option value="">Bitte wählen</option>
-            {products.map(p=> <option key={p.key} value={p.key}>{p.name}</option>)}
-          </select>
-
-          <label className="block text-sm font-medium mb-1 flex items-center gap-2 mt-3">📍 Ort</label>
-          <select name="locationId" value={formData.locationId || ''} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded">
-            <option value="">Bitte wählen</option>
-            {locationsList.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
-
-          <label className="block text-sm font-medium mb-1 flex items-center gap-2 mt-3">🏷️ Kampagne</label>
-          <select name="campaignLabel" value={formData.campaignLabel || ''} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded">
-            <option value="">(Keine)</option>
-            {campaigns.map(c => <option key={c.label} value={c.label}>{c.label}</option>)}
-          </select>
-
-          <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-            🏢 Belegung/Branche *
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Kundenname *
           </label>
           <input
             type="text"
-            name="belegung"
-            value={formData.belegung}
+            name="kundenname"
+            value={formData.kundenname}
             onChange={handleInputChange}
-            list="belegung-list"
-            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            placeholder={categoriesLoading ? "Kategorien werden geladen..." : "z.B. Kanalreinigung"}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            placeholder="z.B. Max Mustermann"
             required
-            disabled={categoriesLoading}
           />
-          <datalist id="belegung-list">
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.name} />
+        </div>
+
+        {/* Kundennummer */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Kundennummer *
+          </label>
+          <input
+            type="text"
+            name="kundennummer"
+            value={formData.kundennummer}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            placeholder="z.B. K-001"
+            required
+          />
+        </div>
+
+        {/* CASCADE Step 1: Plattform */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Plattform *
+          </label>
+          <select
+            name="platform_id"
+            value={formData.platform_id}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            required
+          >
+            <option value="">-- Plattform wählen --</option>
+            {platforms.map(platform => (
+              <option key={platform.id} value={platform.id}>
+                {platform.name}
+              </option>
             ))}
-          </datalist>
+          </select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* CASCADE Step 2: Artikel-Typ (filtered by platform) */}
+        {formData.platform_id && (
           <div>
-            <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-              📅 Startdatum *
-            </label>
-            <DatePicker
-              name="zeitraum_von"
-              value={formData.zeitraum_von}
-              onChange={handleDateChange('zeitraum_von')}
-              placeholder="tt.mm.jjjj (z.B. 15.07.2024)"
-              required
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-              📅 Enddatum <span className="text-gray-500 text-xs">(optional für Abo-Buchungen)</span>
-            </label>
-            <DatePicker
-              name="zeitraum_bis"
-              value={formData.zeitraum_bis}
-              onChange={handleDateChange('zeitraum_bis')}
-              placeholder="tt.mm.jjjj (leer = unbefristetes Abo)"
-              required={false}
-              className="w-full"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              💡 Leer lassen für unbefristete Abo-Buchungen (wird automatisch auf 31.12.2099 gesetzt)
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-blue-600">🎯</span>
-            <p className="text-sm text-blue-700 font-medium">
-              Automatische Platzvergabe
-            </p>
-          </div>
-          <p className="text-xs text-blue-600 mt-1">
-            Das System vergibt automatisch einen verfügbaren Platz (max. 6 pro Belegung/Zeitraum)
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-              📊 Status
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Artikel-Typ *
             </label>
             <select
-              name="status"
-              value={formData.status}
+              name="article_type_id"
+              value={formData.article_type_id}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              required
             >
-              <option value="vorreserviert">Vorreserviert</option>
-              <option value="reserviert">Reserviert</option>
-              <option value="gebucht">Gebucht</option>
+              <option value="">-- Artikel-Typ wählen --</option>
+              {articleTypes.map(type => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
+                </option>
+              ))}
             </select>
           </div>
+        )}
+
+        {/* CASCADE Step 3: Artikel (filtered by article type) */}
+        {formData.article_type_id && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Artikel *
+            </label>
+            <select
+              name="product_id"
+              value={formData.product_id}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              required
+            >
+              <option value="">-- Artikel wählen --</option>
+              {products.map(product => (
+                <option key={product.id} value={product.id}>
+                  {product.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Branche (Category) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Branche *
+          </label>
+          <select
+            name="category_id"
+            value={formData.category_id}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            required
+          >
+            <option value="">-- Branche wählen --</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
 
+        {/* Ort (Location) */}
         <div>
-          <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-            👨‍💼 Berater *
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Ort *
+          </label>
+          <select
+            name="location_id"
+            value={formData.location_id}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            required
+          >
+            <option value="">-- Ort wählen --</option>
+            {locations.map(location => (
+              <option key={location.id} value={location.id}>
+                {location.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Kampagne (Campaign) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Kampagne *
+          </label>
+          <select
+            name="campaign_id"
+            value={formData.campaign_id}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            required
+          >
+            <option value="">-- Kampagne wählen --</option>
+            {campaigns.map(campaign => (
+              <option key={campaign.id} value={campaign.id}>
+                {campaign.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Status */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Status *
+          </label>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            required
+          >
+            <option value="vorreserviert">Vorreserviert</option>
+            <option value="reserviert">Reserviert</option>
+            <option value="gebucht">Gebucht</option>
+          </select>
+        </div>
+
+        {/* Berater */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Berater *
           </label>
           <input
             type="text"
             name="berater"
             value={formData.berater}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            placeholder="Anna Schmidt"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            placeholder="z.B. Anna Schmidt"
             required
           />
         </div>
 
+        {/* Verkaufspreis (optional) */}
         <div>
-          <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-            💰 Verkaufspreis (optional)
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Verkaufspreis (optional)
           </label>
           <input
             type="number"
+            step="0.01"
             name="verkaufspreis"
             value={formData.verkaufspreis}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            placeholder="1500.00"
-            min="0"
-            step="0.01"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            placeholder="z.B. 299.99"
           />
-          <p className="text-sm text-gray-500 mt-1">
-            Verkaufspreis in Euro (z.B. 1500.00)
-          </p>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-3 px-4 rounded font-medium transition-colors ${
-            loading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-red-600 hover:bg-red-700 text-white'
-          }`}
-        >
-          {loading ? '⏳ Wird erstellt...' : '✅ Buchung erstellen'}
-        </button>
+        {/* Submit Button */}
+        <div className="flex gap-4 pt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Erstelle Buchung...' : 'Buchung erstellen'}
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
 export default BookingForm;
-
