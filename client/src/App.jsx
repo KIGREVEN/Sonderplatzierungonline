@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom'
-import { Plus, Search, List, Menu, X, ChevronDown } from 'lucide-react'
+import { Plus, Search, List, Menu, X, ChevronDown, Moon, Sun, Sparkles, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { AuthProvider } from './context/AuthContext'
@@ -18,6 +18,26 @@ import UsersPage from './components/UsersPage'
 import { useAuth } from './context/AuthContext'
 import './App.css'
 
+// Dark Mode Hook
+function useDarkMode() {
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('darkMode')
+    return saved ? JSON.parse(saved) : false
+  })
+
+  useEffect(() => {
+    const root = window.document.documentElement
+    if (isDark) {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+    localStorage.setItem('darkMode', JSON.stringify(isDark))
+  }, [isDark])
+
+  return [isDark, setIsDark]
+}
+
 // Rollenbasierte Weiterleitung
 function RoleBasedRedirect() {
   const { isAdmin } = useAuth()
@@ -32,6 +52,7 @@ function RoleBasedRedirect() {
 function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isVerwaltungOpen, setIsVerwaltungOpen] = useState(false)
+  const [isDark, setIsDark] = useDarkMode()
   const location = useLocation()
   const { isAuthenticated, isAdmin, hasPermission } = useAuth()
 
@@ -42,33 +63,39 @@ function Navigation() {
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="glass sticky top-0 z-[100] border-b border-white/20 dark:border-gray-700/30 animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <img 
-                src="/greven-medien-logo.png" 
-                alt="Greven Medien" 
-                className="h-10 w-auto"
-              />
+            <Link to="/" className="flex items-center space-x-3 group">
+              <div className="relative">
+                <img 
+                  src="/greven-medien-logo.png" 
+                  alt="Greven Medien" 
+                  className="h-10 w-auto transition-transform duration-300 group-hover:scale-110"
+                />
+                <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg opacity-0 group-hover:opacity-20 blur transition-opacity duration-300"></div>
+              </div>
+              <span className="hidden sm:block text-xl font-bold gradient-text">
+                Sonderplatzierung Online
+              </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
             {/* Übersicht */}
             {isAdmin() && (
               <Link
                 to="/overview"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 btn-modern ${
                   isActive('/overview')
-                    ? 'bg-red-100 text-red-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/50'
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                 }`}
               >
                 <List className="h-4 w-4" />
-                <span>Übersicht</span>
+                <span>📊 Übersicht</span>
               </Link>
             )}
 
@@ -76,14 +103,14 @@ function Navigation() {
             {isAdmin() && (
               <Link
                 to="/booking"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 btn-modern ${
                   isActive('/booking')
-                    ? 'bg-red-100 text-red-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/50'
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                 }`}
               >
                 <Plus className="h-4 w-4" />
-                <span>Neue Buchung</span>
+                <span>✨ Neue Buchung</span>
               </Link>
             )}
 
@@ -92,60 +119,60 @@ function Navigation() {
               <button
                 onClick={() => setIsVerwaltungOpen(!isVerwaltungOpen)}
                 onBlur={() => setTimeout(() => setIsVerwaltungOpen(false), 200)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 btn-modern ${
                   isVerwaltungActive()
-                    ? 'bg-red-100 text-red-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/50'
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                 }`}
               >
                 <List className="h-4 w-4" />
-                <span>Verwaltung</span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isVerwaltungOpen ? 'rotate-180' : ''}`} />
+                <span>⚙️ Verwaltung</span>
+                <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isVerwaltungOpen ? 'rotate-180' : ''}`} />
               </button>
               
               {isVerwaltungOpen && (
-                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
+                <div className="absolute left-0 mt-2 w-56 glass-card py-2 z-[110] animate-scale-in shadow-2xl">
                   <Link
                     to="/products"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white transition-all duration-200 mx-2 rounded-lg"
                     onClick={() => setIsVerwaltungOpen(false)}
                   >
-                    Artikel
+                    📦 Artikel
                   </Link>
                   <Link
                     to="/locations"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white transition-all duration-200 mx-2 rounded-lg"
                     onClick={() => setIsVerwaltungOpen(false)}
                   >
-                    Orte
+                    📍 Orte
                   </Link>
                   <Link
                     to="/campaigns"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white transition-all duration-200 mx-2 rounded-lg"
                     onClick={() => setIsVerwaltungOpen(false)}
                   >
-                    Kampagnen
+                    🎯 Kampagnen
                   </Link>
                   <Link
                     to="/categories"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white transition-all duration-200 mx-2 rounded-lg"
                     onClick={() => setIsVerwaltungOpen(false)}
                   >
-                    Branchen
+                    🏢 Branchen
                   </Link>
                   <Link
                     to="/bookings"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white transition-all duration-200 mx-2 rounded-lg"
                     onClick={() => setIsVerwaltungOpen(false)}
                   >
-                    Buchungen
+                    📅 Buchungen
                   </Link>
                   <Link
                     to="/users"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white transition-all duration-200 mx-2 rounded-lg"
                     onClick={() => setIsVerwaltungOpen(false)}
                   >
-                    Benutzer
+                    👥 Benutzer
                   </Link>
                 </div>
               )}
@@ -154,19 +181,28 @@ function Navigation() {
             {/* Verfügbarkeit */}
             <Link
               to="/availability"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 btn-modern ${
                 isActive('/availability')
-                  ? 'bg-red-100 text-red-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/50'
+                  : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
               }`}
             >
               <Search className="h-4 w-4" />
-              <span>Verfügbarkeit</span>
+              <span>🔍 Verfügbarkeit</span>
             </Link>
+
+            {/* Dark Mode Toggle */}
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="p-2.5 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300"
+              aria-label="Toggle Dark Mode"
+            >
+              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
             
             {/* User Profile */}
             {isAuthenticated() && (
-              <div className="ml-4">
+              <div className="ml-2">
                 <UserProfile />
               </div>
             )}
@@ -174,6 +210,13 @@ function Navigation() {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="p-2 rounded-xl text-gray-700 dark:text-gray-200"
+              aria-label="Toggle Dark Mode"
+            >
+              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
             {isAuthenticated() && (
               <UserProfile />
             )}
@@ -181,6 +224,7 @@ function Navigation() {
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
@@ -189,21 +233,21 @@ function Navigation() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
+          <div className="md:hidden animate-slide-in">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {/* Übersicht */}
               {isAdmin() && (
                 <Link
                   to="/overview"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
                     isActive('/overview')
-                      ? 'bg-red-100 text-red-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <List className="h-5 w-5" />
-                  <span>Übersicht</span>
+                  <span>📊 Übersicht</span>
                 </Link>
               )}
 
@@ -211,89 +255,89 @@ function Navigation() {
               {isAdmin() && (
                 <Link
                   to="/booking"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
                     isActive('/booking')
-                      ? 'bg-red-100 text-red-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Plus className="h-5 w-5" />
-                  <span>Neue Buchung</span>
+                  <span>✨ Neue Buchung</span>
                 </Link>
               )}
 
               {/* Verwaltung - Mobile */}
-              <div className="px-3 py-2">
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Verwaltung
+              <div className="px-4 py-2">
+                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                  ⚙️ Verwaltung
                 </div>
                 <div className="space-y-1">
                   <Link
                     to="/products"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-200 ${
                       isActive('/products')
-                        ? 'bg-red-100 text-red-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Artikel
+                    📦 Artikel
                   </Link>
                   <Link
                     to="/locations"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-200 ${
                       isActive('/locations')
-                        ? 'bg-red-100 text-red-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Orte
+                    📍 Orte
                   </Link>
                   <Link
                     to="/campaigns"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-200 ${
                       isActive('/campaigns')
-                        ? 'bg-red-100 text-red-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Kampagnen
+                    🎯 Kampagnen
                   </Link>
                   <Link
                     to="/categories"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-200 ${
                       isActive('/categories')
-                        ? 'bg-red-100 text-red-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Branchen
+                    🏢 Branchen
                   </Link>
                   <Link
                     to="/bookings"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-200 ${
                       isActive('/bookings')
-                        ? 'bg-red-100 text-red-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Buchungen
+                    📅 Buchungen
                   </Link>
                   <Link
                     to="/users"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-200 ${
                       isActive('/users')
-                        ? 'bg-red-100 text-red-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Benutzer
+                    👥 Benutzer
                   </Link>
                 </div>
               </div>
@@ -301,15 +345,15 @@ function Navigation() {
               {/* Verfügbarkeit */}
               <Link
                 to="/availability"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
                   isActive('/availability')
-                    ? 'bg-red-100 text-red-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Search className="h-5 w-5" />
-                <span>Verfügbarkeit</span>
+                <span>🔍 Verfügbarkeit</span>
               </Link>
             </div>
           </div>
@@ -356,160 +400,180 @@ function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData()
-    // Aktualisiere die Daten alle 5 Minuten
     const interval = setInterval(fetchDashboardData, 300000)
     return () => clearInterval(interval)
   }, [])
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        {isAdmin() && (
-          <div className="mt-4 sm:mt-0">
-            <Link to="/booking">
-              <Button className="w-full sm:w-auto">
-                <Plus className="h-4 w-4 mr-2" />
-                Neue Buchung
-              </Button>
-            </Link>
+    <div className="space-y-8 animate-fade-in">
+      {/* Hero Section */}
+      <div className="hero-gradient rounded-3xl p-8 md:p-12 glass-card">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-2">
+              Dashboard <Sparkles className="inline h-8 w-8 text-orange-500" />
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 text-lg">
+              Willkommen zurück! Hier ist deine Übersicht.
+            </p>
           </div>
-        )}
+          {isAdmin() && (
+            <div className="mt-6 sm:mt-0">
+              <Link to="/booking">
+                <Button className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg shadow-red-500/50 btn-modern">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Neue Buchung
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aktive Buchungen</CardTitle>
-            <List className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-2xl font-bold animate-pulse">...</div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold">{stats.activeBookings}</div>
-                <p className="text-xs text-muted-foreground">
-                  Aktuell bestätigte Buchungen
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        <div className="glass-card p-6 card-hover">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl">
+              <List className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-3xl">📊</span>
+          </div>
+          {loading ? (
+            <div className="text-3xl font-bold animate-pulse">...</div>
+          ) : (
+            <>
+              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                {stats.activeBookings}
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Aktive Buchungen
+              </p>
+            </>
+          )}
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Verfügbare Plätze</CardTitle>
-            <Search className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-2xl font-bold animate-pulse">...</div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold">{stats.availablePlaces}</div>
-                <p className="text-xs text-muted-foreground">
-                  Freie Platzierungen
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        <div className="glass-card p-6 card-hover">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl">
+              <Search className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-3xl">✅</span>
+          </div>
+          {loading ? (
+            <div className="text-3xl font-bold animate-pulse">...</div>
+          ) : (
+            <>
+              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                {stats.availablePlaces}
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Verfügbare Plätze
+              </p>
+            </>
+          )}
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reservierungen</CardTitle>
-            <List className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-2xl font-bold animate-pulse">...</div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold">{stats.pendingReservations}</div>
-                <p className="text-xs text-muted-foreground">
-                  Ausstehende Reservierungen
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        <div className="glass-card p-6 card-hover">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl">
+              <List className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-3xl">⏳</span>
+          </div>
+          {loading ? (
+            <div className="text-3xl font-bold animate-pulse">...</div>
+          ) : (
+            <>
+              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                {stats.pendingReservations}
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Ausstehende Reservierungen
+              </p>
+            </>
+          )}
+        </div>
       </div>
 
+      {/* Quick Actions & Recent Bookings */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Schnellzugriff</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="glass-card p-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+            <Sparkles className="h-5 w-5 mr-2 text-orange-500" />
+            Schnellzugriff
+          </h2>
+          <div className="space-y-3">
             {isAdmin() && (
               <Link to="/booking" className="block">
-                <Button variant="outline" className="w-full justify-start">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Neue Buchung erstellen
+                <Button variant="outline" className="w-full justify-start h-12 btn-modern hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent">
+                  <Plus className="h-5 w-5 mr-3" />
+                  ✨ Neue Buchung erstellen
                 </Button>
               </Link>
             )}
             <Link to="/availability" className="block">
-              <Button variant="outline" className="w-full justify-start">
-                <Search className="h-4 w-4 mr-2" />
-                Verfügbarkeit prüfen
+              <Button variant="outline" className="w-full justify-start h-12 btn-modern hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent">
+                <Search className="h-5 w-5 mr-3" />
+                🔍 Verfügbarkeit prüfen
               </Button>
             </Link>
             <Link to="/bookings" className="block">
-              <Button variant="outline" className="w-full justify-start">
-                <List className="h-4 w-4 mr-2" />
-                Alle Buchungen anzeigen
+              <Button variant="outline" className="w-full justify-start h-12 btn-modern hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent">
+                <List className="h-5 w-5 mr-3" />
+                📅 Alle Buchungen anzeigen
               </Button>
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex justify-between items-center">
-            <CardTitle>Neueste Buchungen</CardTitle>
+        <div className="glass-card p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+              <List className="h-5 w-5 mr-2 text-orange-500" />
+              Neueste Buchungen
+            </h2>
             <Link to="/bookings">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white">
                 Alle anzeigen
               </Button>
             </Link>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="animate-pulse space-y-2">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-12 bg-gray-100 rounded"></div>
-                ))}
-              </div>
-            ) : stats.recentBookings.length > 0 ? (
-              <div className="space-y-4">
-                {stats.recentBookings.map((booking, i) => (
-                  <div key={booking.id} className="flex justify-between items-center text-sm">
-                    <div>
-                      <div className="font-medium">{booking.kundenname}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <div className={`px-2 py-1 rounded text-xs ${
-                      booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                      booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {booking.status === 'confirmed' ? 'Bestätigt' :
-                       booking.status === 'pending' ? 'Ausstehend' :
-                       booking.status}
+          </div>
+          {loading ? (
+            <div className="animate-pulse space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+              ))}
+            </div>
+          ) : stats.recentBookings.length > 0 ? (
+            <div className="space-y-3">
+              {stats.recentBookings.map((booking) => (
+                <div key={booking.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-200">
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">{booking.kundenname}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                Keine aktuellen Buchungen
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <div className={`px-3 py-1 rounded-lg text-xs font-medium ${
+                    booking.status === 'confirmed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                    booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                    'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                  }`}>
+                    {booking.status === 'confirmed' ? '✅ Bestätigt' :
+                     booking.status === 'pending' ? '⏳ Ausstehend' :
+                     booking.status}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-600 dark:text-gray-400">
+              <List className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>Keine aktuellen Buchungen</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -519,10 +583,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-modern custom-scrollbar">
           <ProtectedRoute>
             <Navigation />
-            <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
               <Routes>
                 <Route 
                   path="/" 
@@ -563,10 +627,23 @@ function App() {
                   } 
                 />
                 <Route path="/dashboard" element={<Dashboard />} />
-                {/* Redirect für unbekannte Routen */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
+            
+            {/* Footer */}
+            <footer className="mt-16 border-t border-gray-200 dark:border-gray-700">
+              <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                <div className="text-center text-gray-600 dark:text-gray-400">
+                  <p className="text-sm">
+                    © {new Date().getFullYear()} Greven Medien. Alle Rechte vorbehalten.
+                  </p>
+                  <p className="text-xs mt-2">
+                    Made with ❤️ and modern technology
+                  </p>
+                </div>
+              </div>
+            </footer>
           </ProtectedRoute>
         </div>
       </Router>
@@ -575,4 +652,3 @@ function App() {
 }
 
 export default App
-

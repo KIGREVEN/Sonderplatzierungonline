@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 
 const UserProfile = () => {
@@ -59,12 +60,12 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="relative">
+    <div className="relative z-[105]">
       {/* User Menu Button */}
-      <div className="flex items-center space-x-3 bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 hover:shadow-md transition-shadow duration-200">
+      <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 px-3 py-2 hover:shadow-md transition-shadow duration-200">
         {/* Avatar */}
         <div className="flex-shrink-0">
-          <div className="h-8 w-8 rounded-full bg-koeln-red flex items-center justify-center">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center">
             <span className="text-sm font-medium text-white">
               {user.username.charAt(0).toUpperCase()}
             </span>
@@ -74,12 +75,12 @@ const UserProfile = () => {
         {/* User Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
               {user.username}
             </p>
             {getRoleIcon()}
           </div>
-          <p className="text-xs text-gray-500 truncate">
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
             {user.role}
           </p>
         </div>
@@ -87,7 +88,7 @@ const UserProfile = () => {
         {/* Logout Button */}
         <button
           onClick={() => setShowLogoutConfirm(true)}
-          className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          className="flex-shrink-0 p-1 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
           title="Abmelden"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,52 +97,46 @@ const UserProfile = () => {
         </button>
       </div>
 
-      {/* Logout Confirmation Modal */}
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      {/* Logout Confirmation Modal via Portal to escape transformed/overflow parents */}
+      {showLogoutConfirm && createPortal(
+        <div className="fixed inset-0 bg-gray-900/75 dark:bg-black/85 backdrop-blur-sm z-[200] flex items-center justify-center animate-fade-in">
+          <div className="relative glass-card rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-scale-in">
             <div className="p-6">
               <div className="flex items-center mb-4">
-                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                  <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30">
+                  <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                 </div>
               </div>
               
               <div className="text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Abmelden bestätigen
-                </h3>
-                <p className="text-sm text-gray-500 mb-6">
-                  Möchten Sie sich wirklich abmelden? Sie müssen sich erneut anmelden, um das Portal zu verwenden.
-                </p>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Abmelden bestätigen</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Möchten Sie sich wirklich abmelden? Sie müssen sich erneut anmelden, um das Portal zu verwenden.</p>
 
                 {/* User Info */}
-                <div className="bg-gray-50 rounded-md p-3 mb-6">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-3 mb-6">
                   <div className="flex items-center justify-center space-x-2 mb-2">
-                    <div className="h-6 w-6 rounded-full bg-koeln-red flex items-center justify-center">
-                      <span className="text-xs font-medium text-white">
-                        {user.username.charAt(0).toUpperCase()}
-                      </span>
+                    <div className="h-6 w-6 rounded-full bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center">
+                      <span className="text-xs font-medium text-white">{user.username.charAt(0).toUpperCase()}</span>
                     </div>
-                    <span className="text-sm font-medium text-gray-900">{user.username}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{user.username}</span>
                     {getRoleIcon()}
                   </div>
-                  <p className="text-xs text-gray-600">{getRoleDescription()}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{getRoleDescription()}</p>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex space-x-3">
                   <button
                     onClick={() => setShowLogoutConfirm(false)}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-koeln-red transition-colors duration-200"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
                   >
                     Abbrechen
                   </button>
                   <button
                     onClick={handleLogout}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 border border-transparent rounded-xl shadow-glow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
                   >
                     Abmelden
                   </button>
@@ -149,7 +144,8 @@ const UserProfile = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

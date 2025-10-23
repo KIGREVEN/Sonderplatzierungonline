@@ -193,26 +193,26 @@ const AvailabilityChecker = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">
+      <div className="glass-card p-6 rounded-xl">
+        <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
           🔍 Verfügbarkeitsprüfung
         </h1>
         
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
           Wählen Sie Plattform, Artikel-Typ, Ort, Belegung und Kampagne aus, um zu sehen, welche Artikel verfügbar oder belegt sind.
         </p>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Plattform *
               </label>
               <select
                 name="platform_id"
                 value={checkData.platform_id}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                 required
               >
                 <option value="">-- Plattform wählen --</option>
@@ -225,14 +225,14 @@ const AvailabilityChecker = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Artikel-Typ *
               </label>
               <select
                 name="article_type_id"
                 value={checkData.article_type_id}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                 required
                 disabled={!checkData.platform_id}
               >
@@ -246,14 +246,14 @@ const AvailabilityChecker = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Ort *
               </label>
               <select
                 name="location_id"
                 value={checkData.location_id}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                 required
               >
                 <option value="">-- Ort wählen --</option>
@@ -266,14 +266,14 @@ const AvailabilityChecker = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Belegung (Branche) *
               </label>
               <select
                 name="category_id"
                 value={checkData.category_id}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                 required
               >
                 <option value="">-- Belegung wählen --</option>
@@ -286,14 +286,14 @@ const AvailabilityChecker = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Kampagne *
               </label>
               <select
                 name="campaign_id"
                 value={checkData.campaign_id}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                 required
               >
                 <option value="">-- Kampagne wählen --</option>
@@ -307,10 +307,10 @@ const AvailabilityChecker = () => {
           </div>
 
           {message.text && (
-            <div className={`p-4 rounded-md ${
-              message.type === 'success' ? 'bg-green-100 text-green-700' : 
-              message.type === 'info' ? 'bg-blue-100 text-blue-700' :
-              'bg-red-100 text-red-700'
+            <div className={`p-4 rounded-xl ${
+              message.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 
+              message.type === 'info' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
+              'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
             }`}>
               {message.text}
             </div>
@@ -319,7 +319,7 @@ const AvailabilityChecker = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-red-600 text-white py-3 px-6 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-3 px-6 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-glow transition-all duration-200"
           >
             {loading ? '⏳ Prüfe Verfügbarkeit...' : '🔍 Verfügbarkeit prüfen'}
           </button>
@@ -327,12 +327,12 @@ const AvailabilityChecker = () => {
       </div>
 
       {results.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">
+        <div className="glass-card p-6 rounded-xl">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
             📊 Verfügbarkeit für: {articleType?.name}
           </h2>
           
-          <div className="mb-4 text-sm text-gray-600 space-y-1">
+          <div className="mb-4 text-sm text-gray-600 dark:text-gray-300 space-y-1">
             <p><strong>Plattform:</strong> {platform?.name}</p>
             <p><strong>Ort:</strong> {location?.name}</p>
             <p><strong>Belegung:</strong> {category?.name}</p>
@@ -343,10 +343,10 @@ const AvailabilityChecker = () => {
             {results.map((result, index) => (
               <div 
                 key={index} 
-                className={`p-4 rounded-lg border-2 ${
+                className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                   result.is_available 
-                    ? 'bg-green-50 border-green-200' 
-                    : 'bg-red-50 border-red-200'
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
                 }`}
               >
                 <div className="flex items-start justify-between">
@@ -357,12 +357,12 @@ const AvailabilityChecker = () => {
                       </span>
                       <div>
                         <h3 className={`font-bold text-lg ${
-                          result.is_available ? 'text-green-800' : 'text-red-800'
+                          result.is_available ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400'
                         }`}>
                           {result.product.name}
                         </h3>
                         <p className={`text-sm ${
-                          result.is_available ? 'text-green-600' : 'text-red-600'
+                          result.is_available ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'
                         }`}>
                           {result.is_available ? 'Verfügbar' : 'Belegt'}
                         </p>
@@ -370,28 +370,28 @@ const AvailabilityChecker = () => {
                     </div>
 
                     {!result.is_available && result.booking && (
-                      <div className="mt-3 ml-11 p-3 bg-white rounded border border-gray-200">
-                        <h4 className="font-semibold text-gray-800 mb-2 text-sm">Buchungsinformationen:</h4>
+                      <div className="mt-3 ml-11 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <h4 className="font-semibold text-gray-800 dark:text-white mb-2 text-sm">Buchungsinformationen:</h4>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
-                            <span className="text-gray-600">Kunde:</span>
-                            <p className="font-medium">{result.booking.kundenname}</p>
+                            <span className="text-gray-600 dark:text-gray-400">Kunde:</span>
+                            <p className="font-medium text-gray-900 dark:text-white">{result.booking.kundenname}</p>
                           </div>
                           <div>
-                            <span className="text-gray-600">Kundennummer:</span>
-                            <p className="font-medium">{result.booking.kundennummer}</p>
+                            <span className="text-gray-600 dark:text-gray-400">Kundennummer:</span>
+                            <p className="font-medium text-gray-900 dark:text-white">{result.booking.kundennummer}</p>
                           </div>
                           <div>
-                            <span className="text-gray-600">Berater:</span>
-                            <p className="font-medium">{result.booking.berater}</p>
+                            <span className="text-gray-600 dark:text-gray-400">Berater:</span>
+                            <p className="font-medium text-gray-900 dark:text-white">{result.booking.berater}</p>
                           </div>
                           <div>
-                            <span className="text-gray-600">Status:</span>
+                            <span className="text-gray-600 dark:text-gray-400">Status:</span>
                             <p className="font-medium">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                result.booking.status === 'gebucht' ? 'bg-green-100 text-green-800' :
-                                result.booking.status === 'reserviert' ? 'bg-blue-100 text-blue-800' :
-                                'bg-yellow-100 text-yellow-800'
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                result.booking.status === 'gebucht' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
+                                result.booking.status === 'reserviert' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400' :
+                                'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
                               }`}>
                                 {result.booking.status}
                               </span>
@@ -399,8 +399,8 @@ const AvailabilityChecker = () => {
                           </div>
                           {result.booking.verkaufspreis && (
                             <div>
-                              <span className="text-gray-600">Verkaufspreis:</span>
-                              <p className="font-medium">
+                              <span className="text-gray-600 dark:text-gray-400">Verkaufspreis:</span>
+                              <p className="font-medium text-gray-900 dark:text-white">
                                 {new Intl.NumberFormat('de-DE', { 
                                   style: 'currency', 
                                   currency: 'EUR' 

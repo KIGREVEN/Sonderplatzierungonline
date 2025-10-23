@@ -78,13 +78,29 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // CORS configuration
-app.use(cors({
-  origin: ['http://localhost:5173', 'http://217.110.253.198:5173'],
+// Supports:
+// - CORS_ORIGIN="*" to allow all
+// - CORS_ORIGIN="http://a:5173,http://b:5173" for a comma-separated whitelist
+// - Defaults to localhost:5173 for local development
+const corsOriginEnv = process.env.CORS_ORIGIN || 'http://localhost:5173';
+const allowedOrigins = corsOriginEnv.split(',').map(o => o.trim()).filter(Boolean);
+
+const corsOptions = {
+  origin: corsOriginEnv === '*' ? true : function(origin, callback) {
+    // Allow non-browser requests (no origin) like curl or server-to-server
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS: ' + origin));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['Access-Control-Allow-Origin']
-}));
+};
+
+app.use(cors(corsOptions));
 
 // Compression middleware
 app.use(compression());

@@ -239,17 +239,17 @@ const BookingForm = ({ onBookingCreated }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Neue Buchung erstellen
+    <div className="max-w-2xl mx-auto p-6 glass-card rounded-xl">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
+        📝 Neue Buchung erstellen
       </h2>
 
       {message.text && (
         <div
-          className={`mb-4 p-4 rounded ${
+          className={`mb-4 p-4 rounded-xl ${
             message.type === 'success'
-              ? 'bg-green-100 text-green-700'
-              : 'bg-red-100 text-red-700'
+              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
           }`}
         >
           {message.text}
@@ -259,7 +259,7 @@ const BookingForm = ({ onBookingCreated }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Kundenname */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Kundenname *
           </label>
           <input
@@ -267,7 +267,7 @@ const BookingForm = ({ onBookingCreated }) => {
             name="kundenname"
             value={formData.kundenname}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
             placeholder="z.B. Max Mustermann"
             required
           />
@@ -275,7 +275,7 @@ const BookingForm = ({ onBookingCreated }) => {
 
         {/* Kundennummer */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Kundennummer *
           </label>
           <input
@@ -283,7 +283,7 @@ const BookingForm = ({ onBookingCreated }) => {
             name="kundennummer"
             value={formData.kundennummer}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
             placeholder="z.B. K-001"
             required
           />
@@ -291,14 +291,14 @@ const BookingForm = ({ onBookingCreated }) => {
 
         {/* CASCADE Step 1: Plattform */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Plattform *
           </label>
           <select
             name="platform_id"
             value={formData.platform_id}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
             required
           >
             <option value="">-- Plattform wählen --</option>
@@ -313,14 +313,14 @@ const BookingForm = ({ onBookingCreated }) => {
         {/* CASCADE Step 2: Artikel-Typ (filtered by platform) */}
         {formData.platform_id && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Artikel-Typ *
             </label>
             <select
               name="article_type_id"
               value={formData.article_type_id}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
               required
             >
               <option value="">-- Artikel-Typ wählen --</option>
@@ -336,14 +336,14 @@ const BookingForm = ({ onBookingCreated }) => {
         {/* CASCADE Step 3: Artikel (filtered by article type) */}
         {formData.article_type_id && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Artikel *
             </label>
             <select
               name="product_id"
               value={formData.product_id}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
               required
             >
               <option value="">-- Artikel wählen --</option>
@@ -358,14 +358,14 @@ const BookingForm = ({ onBookingCreated }) => {
 
         {/* Branche (Category) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Branche *
           </label>
           <select
             name="category_id"
             value={formData.category_id}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
             required
           >
             <option value="">-- Branche wählen --</option>
@@ -379,14 +379,14 @@ const BookingForm = ({ onBookingCreated }) => {
 
         {/* Ort (Location) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Ort *
           </label>
           <select
             name="location_id"
             value={formData.location_id}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
             required
           >
             <option value="">-- Ort wählen --</option>
@@ -400,14 +400,14 @@ const BookingForm = ({ onBookingCreated }) => {
 
         {/* Kampagne (Campaign) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Kampagne *
           </label>
           <select
             name="campaign_id"
             value={formData.campaign_id}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
             required
           >
             <option value="">-- Kampagne wählen --</option>
@@ -421,14 +421,14 @@ const BookingForm = ({ onBookingCreated }) => {
 
         {/* Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Status *
           </label>
           <select
             name="status"
             value={formData.status}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
             required
           >
             <option value="vorreserviert">Vorreserviert</option>
@@ -439,7 +439,7 @@ const BookingForm = ({ onBookingCreated }) => {
 
         {/* Berater */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Berater *
           </label>
           <input
@@ -447,7 +447,7 @@ const BookingForm = ({ onBookingCreated }) => {
             name="berater"
             value={formData.berater}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
             placeholder="z.B. Anna Schmidt"
             required
           />
@@ -455,7 +455,7 @@ const BookingForm = ({ onBookingCreated }) => {
 
         {/* Verkaufspreis (optional) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Verkaufspreis (optional)
           </label>
           <input
@@ -464,7 +464,7 @@ const BookingForm = ({ onBookingCreated }) => {
             name="verkaufspreis"
             value={formData.verkaufspreis}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
             placeholder="z.B. 299.99"
           />
         </div>
@@ -474,9 +474,9 @@ const BookingForm = ({ onBookingCreated }) => {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-3 px-4 rounded-xl shadow-glow focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
-            {loading ? 'Erstelle Buchung...' : 'Buchung erstellen'}
+            {loading ? '⏳ Erstelle Buchung...' : '✅ Buchung erstellen'}
           </button>
         </div>
       </form>
