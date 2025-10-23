@@ -5,7 +5,7 @@ import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
 import { Switch } from './ui/switch'
 import { Label } from './ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from './ui/dialog'
 
 export default function ProductsPage(){
   const { apiRequest, isAdmin } = useAuth()
@@ -193,6 +193,9 @@ export default function ProductsPage(){
               <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <DialogHeader>
                   <DialogTitle className="text-gray-900 dark:text-white">Neuer Artikel-Typ</DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Formular zum Erstellen eines neuen Artikel-Typs. Bitte geben Sie Name und optional eine Beschreibung ein.
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleTypeSubmit} className="space-y-4 mt-4">
                   <div>
@@ -245,6 +248,9 @@ export default function ProductsPage(){
             <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-gray-900 dark:text-white">{editProduct ? 'Artikel bearbeiten' : 'Neuer Artikel'}</DialogTitle>
+                <DialogDescription className="sr-only">
+                  {editProduct ? 'Formular zum Bearbeiten eines bestehenden Artikels.' : 'Formular zum Erstellen eines neuen Artikels.'}
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                 <div>

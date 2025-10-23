@@ -11,6 +11,7 @@
     "migrate:down": "node scripts/migrate.js down",
     "migrate:reset": "node scripts/migrate.js reset",
     "migrate:status": "node scripts/migrate.js status",
+    "migrate:articles": "node scripts/run_article_migrations.js",
     "seed": "node scripts/seed.js",
     "seed:run": "node scripts/seed.js seed",
     "seed:clear": "node scripts/seed.js clear",
