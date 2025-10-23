@@ -16,7 +16,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  // Prefer explicit VITE_API_URL; otherwise default to current origin (works in production behind Nginx),
+  // and finally fall back to localhost:3001 for local dev where no proxy is set up.
+  const baseUrl =
+    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
+      || (typeof window !== 'undefined' ? window.location.origin : undefined)
+      || 'http://localhost:3001';
 
   // Initialisierung: Prüfe ob Benutzer bereits angemeldet ist
   useEffect(() => {
