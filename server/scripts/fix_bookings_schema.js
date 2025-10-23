@@ -71,6 +71,29 @@ const { query } = require('../config/database');
     await query(`
       DO $$
       BEGIN
+        -- Make date fields optional
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'bookings' AND column_name = 'zeitraum_von'
+        ) THEN
+          BEGIN
+            ALTER TABLE bookings ALTER COLUMN zeitraum_von DROP NOT NULL;
+          EXCEPTION WHEN others THEN
+            NULL;
+          END;
+        END IF;
+
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'bookings' AND column_name = 'zeitraum_bis'
+        ) THEN
+          BEGIN
+            ALTER TABLE bookings ALTER COLUMN zeitraum_bis DROP NOT NULL;
+          EXCEPTION WHEN others THEN
+            NULL;
+          END;
+        END IF;
+
         -- Drop NOT NULL only if column exists
         IF EXISTS (
           SELECT 1 FROM information_schema.columns
@@ -96,7 +119,7 @@ const { query } = require('../config/database');
         END IF;
       END$$;
     `);
-    console.log('✅ Made legacy columns belegung/platzierung nullable');
+    console.log('✅ Made legacy columns zeitraum_von, zeitraum_bis, belegung, platzierung nullable');
 
     // Indexes to speed up lookups
     await query(`CREATE INDEX IF NOT EXISTS idx_bookings_platform_id ON bookings(platform_id)`);
