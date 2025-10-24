@@ -1,3 +1,23 @@
+// GET /products/:id
+router.get('/:id', optionalAuth, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await query(
+      `SELECT p.*, COALESCE(array_agg(ap.platform_key) FILTER (WHERE ap.platform_key IS NOT NULL), '{}') as platforms
+       FROM products p
+       LEFT JOIN article_platforms ap ON p.id = ap.article_id
+       WHERE p.id = $1
+       GROUP BY p.id`,
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    next(error);
+  }
+});
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
