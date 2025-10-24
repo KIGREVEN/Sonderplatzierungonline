@@ -1,3 +1,8 @@
+const express = require('express');
+const router = express.Router();
+const Platform = require('../models/Platform');
+const { optionalAuth } = require('../middleware/auth');
+
 // GET /platforms/:id
 router.get('/:id', optionalAuth, async (req, res, next) => {
   try {
@@ -11,10 +16,6 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
     next(error);
   }
 });
-const express = require('express');
-const router = express.Router();
-const Platform = require('../models/Platform');
-const { optionalAuth } = require('../middleware/auth');
 
 // GET /platforms
 router.get('/', optionalAuth, async (req, res, next) => {
