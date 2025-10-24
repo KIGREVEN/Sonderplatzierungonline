@@ -1,8 +1,8 @@
 const { query, transaction } = require('../config/database');
 const Joi = require('joi');
 
-// Validation schema for booking data (NEW SIMPLIFIED LOGIC)
-const bookingSchema = Joi.object({
+// Base validation schema - campaign_id and duration fields are conditionally required
+const bookingSchemaBase = Joi.object({
   // Required fields
   kundenname: Joi.string().min(2).max(100).required().messages({
     'string.empty': 'Kundenname ist erforderlich',
@@ -29,9 +29,18 @@ const bookingSchema = Joi.object({
     'number.base': 'Branche ist erforderlich',
     'any.required': 'Branche ist erforderlich'
   }),
-  campaign_id: Joi.number().integer().required().messages({
-    'number.base': 'Kampagne ist erforderlich',
-    'any.required': 'Kampagne ist erforderlich'
+  // Campaign OR Duration (conditionally required based on article type)
+  campaign_id: Joi.number().integer().allow(null).optional().messages({
+    'number.base': 'Kampagne muss eine Zahl sein'
+  }),
+  duration_start: Joi.date().iso().allow(null).optional().messages({
+    'date.base': 'Startdatum muss ein gültiges Datum sein',
+    'date.format': 'Startdatum muss im Format YYYY-MM-DD sein'
+  }),
+  duration_end: Joi.date().iso().min(Joi.ref('duration_start')).allow(null).optional().messages({
+    'date.base': 'Enddatum muss ein gültiges Datum sein',
+    'date.min': 'Enddatum muss nach dem Startdatum liegen',
+    'date.format': 'Enddatum muss im Format YYYY-MM-DD sein'
   }),
   status: Joi.string().valid('vorreserviert', 'reserviert', 'gebucht').default('reserviert').messages({
     'any.only': 'Status muss vorreserviert, reserviert oder gebucht sein'
@@ -49,60 +58,160 @@ const bookingSchema = Joi.object({
 });
 
 class Booking {
-  // Validate booking data
-  static validate(data) {
-    const { error, value } = bookingSchema.validate(data, { abortEarly: false });
-    if (error) {
+  // Get article type's campaign mode (is_campaign_based flag)
+  static async getArticleTypeMode(product_id) {
+    const result = await query(`
+      SELECT at.is_campaign_based 
+      FROM products p
+      JOIN article_types at ON p.article_type_id = at.id
+      WHERE p.id = $1
+    `, [product_id]);
+
+    if (result.rows.length === 0) {
+      throw new Error('Produkt nicht gefunden');
+    }
+
+    return result.rows[0].is_campaign_based;
+  }
+
+  // Validate booking data (with conditional campaign/duration requirement)
+  static async validate(data) {
+    // Base validation first
+    const { error: baseError, value } = bookingSchemaBase.validate(data, { abortEarly: false });
+    if (baseError) {
       const validationError = new Error('Validation failed');
       validationError.name = 'ValidationError';
-      validationError.details = error.details.map(detail => ({
+      validationError.details = baseError.details.map(detail => ({
         field: detail.path.join('.'),
         message: detail.message
       }));
       throw validationError;
     }
+
+    // Get article type mode to determine campaign vs duration requirement
+    const isCampaignBased = await this.getArticleTypeMode(value.product_id);
+
+    // Conditional validation: Campaign XOR Duration
+    if (isCampaignBased) {
+      // Campaign-based: campaign_id required, duration fields must be null
+      if (!value.campaign_id) {
+        const error = new Error('Validation failed');
+        error.name = 'ValidationError';
+        error.details = [{
+          field: 'campaign_id',
+          message: 'Kampagne ist für diesen Artikel-Typ erforderlich'
+        }];
+        throw error;
+      }
+      if (value.duration_start || value.duration_end) {
+        const error = new Error('Validation failed');
+        error.name = 'ValidationError';
+        error.details = [{
+          field: 'duration',
+          message: 'Laufzeit-Felder sind für kampagnen-basierte Artikel nicht erlaubt'
+        }];
+        throw error;
+      }
+    } else {
+      // Duration-based: duration_start/end required, campaign_id must be null
+      if (!value.duration_start || !value.duration_end) {
+        const error = new Error('Validation failed');
+        error.name = 'ValidationError';
+        error.details = [{
+          field: 'duration',
+          message: 'Start- und Enddatum sind für diesen Artikel-Typ erforderlich'
+        }];
+        throw error;
+      }
+      if (value.campaign_id) {
+        const error = new Error('Validation failed');
+        error.name = 'ValidationError';
+        error.details = [{
+          field: 'campaign_id',
+          message: 'Kampagne ist für laufzeit-basierte Artikel nicht erlaubt'
+        }];
+        throw error;
+      }
+    }
+
     return value;
   }
 
-  // Check for double booking (NEW SIMPLIFIED LOGIC)
-  // Kombination (platform_id, product_id, location_id, campaign_id) darf nur einmal existieren
-  static async checkDoubleBooking(platform_id, product_id, location_id, campaign_id, excludeId = null) {
-    let queryText = `
-      SELECT id, kundenname, berater
-      FROM bookings 
-      WHERE platform_id = $1 
-        AND product_id = $2 
-        AND location_id = $3 
-        AND campaign_id = $4
-        AND platform_id IS NOT NULL
-        AND product_id IS NOT NULL
-        AND location_id IS NOT NULL
-        AND campaign_id IS NOT NULL
-    `;
-    
-    const params = [platform_id, product_id, location_id, campaign_id];
-    
-    if (excludeId) {
-      queryText += ` AND id != $5`;
-      params.push(excludeId);
+  // Check for double booking (supports both campaign and duration mode)
+  // Campaign mode: (platform_id, product_id, location_id, campaign_id) unique
+  // Duration mode: (platform_id, product_id, location_id) + duration overlap check
+  static async checkDoubleBooking(platform_id, product_id, location_id, campaign_id, duration_start, duration_end, excludeId = null) {
+    // Campaign-based check
+    if (campaign_id) {
+      let queryText = `
+        SELECT id, kundenname, berater
+        FROM bookings 
+        WHERE platform_id = $1 
+          AND product_id = $2 
+          AND location_id = $3 
+          AND campaign_id = $4
+          AND platform_id IS NOT NULL
+          AND product_id IS NOT NULL
+          AND location_id IS NOT NULL
+          AND campaign_id IS NOT NULL
+      `;
+      
+      const params = [platform_id, product_id, location_id, campaign_id];
+      
+      if (excludeId) {
+        queryText += ` AND id != $5`;
+        params.push(excludeId);
+      }
+
+      const result = await query(queryText, params);
+      return result.rows.length > 0 ? result.rows[0] : null;
     }
 
-    const result = await query(queryText, params);
-    return result.rows.length > 0 ? result.rows[0] : null;
+    // Duration-based check (overlapping ranges)
+    if (duration_start && duration_end) {
+      let queryText = `
+        SELECT id, kundenname, berater, duration_start, duration_end
+        FROM bookings 
+        WHERE platform_id = $1 
+          AND product_id = $2 
+          AND location_id = $3 
+          AND duration_start IS NOT NULL
+          AND duration_end IS NOT NULL
+          AND (
+            (duration_start <= $4 AND duration_end >= $4) OR
+            (duration_start <= $5 AND duration_end >= $5) OR
+            (duration_start >= $4 AND duration_end <= $5)
+          )
+      `;
+      
+      const params = [platform_id, product_id, location_id, duration_start, duration_end];
+      
+      if (excludeId) {
+        queryText += ` AND id != $6`;
+        params.push(excludeId);
+      }
+
+      const result = await query(queryText, params);
+      return result.rows.length > 0 ? result.rows[0] : null;
+    }
+
+    return null;
   }
 
 
 
-  // Create a new booking (NEW SIMPLIFIED LOGIC)
+  // Create a new booking (supports both campaign and duration mode)
   static async create(bookingData) {
-    const validatedData = this.validate(bookingData);
+    const validatedData = await this.validate(bookingData);
 
-    // Check for double booking
+    // Check for double booking (pass duration fields)
     const existingBooking = await this.checkDoubleBooking(
       validatedData.platform_id,
       validatedData.product_id,
       validatedData.location_id,
-      validatedData.campaign_id
+      validatedData.campaign_id || null,
+      validatedData.duration_start || null,
+      validatedData.duration_end || null
     );
 
     if (existingBooking) {
@@ -113,7 +222,11 @@ class Booking {
         existingBooking: {
           id: existingBooking.id,
           kundenname: existingBooking.kundenname,
-          berater: existingBooking.berater
+          berater: existingBooking.berater,
+          ...(existingBooking.duration_start && {
+            duration_start: existingBooking.duration_start,
+            duration_end: existingBooking.duration_end
+          })
         }
       };
       throw error;
@@ -122,9 +235,9 @@ class Booking {
     const queryText = `
       INSERT INTO bookings (
         kundenname, kundennummer, platform_id, product_id, location_id, 
-        category_id, campaign_id, status, berater, verkaufspreis, 
+        category_id, campaign_id, duration_start, duration_end, status, berater, verkaufspreis, 
         created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
       RETURNING *
     `;
 
@@ -135,7 +248,9 @@ class Booking {
       validatedData.product_id,
       validatedData.location_id,
       validatedData.category_id,
-      validatedData.campaign_id,
+      validatedData.campaign_id || null,
+      validatedData.duration_start || null,
+      validatedData.duration_end || null,
       validatedData.status || 'reserviert',
       validatedData.berater,
       validatedData.verkaufspreis || null
@@ -145,7 +260,7 @@ class Booking {
     return result.rows[0];
   }
 
-  // Get all bookings with optional filters (NEW SIMPLIFIED LOGIC)
+  // Get all bookings with optional filters (supports campaign and duration mode)
   static async findAll(filters = {}) {
     let queryText = `
       SELECT 
@@ -165,7 +280,6 @@ class Booking {
         AND b.platform_id IS NOT NULL
         AND b.product_id IS NOT NULL
         AND b.location_id IS NOT NULL
-        AND b.campaign_id IS NOT NULL
     `;
     const params = [];
     let paramCount = 0;
@@ -231,14 +345,16 @@ class Booking {
       throw new Error('Booking not found');
     }
 
-    const validatedData = this.validate(updateData);
+    const validatedData = await this.validate(updateData);
 
-    // Check for double booking (excluding current booking)
+    // Check for double booking (excluding current booking, pass duration fields)
     const conflictingBooking = await this.checkDoubleBooking(
       validatedData.platform_id,
       validatedData.product_id,
       validatedData.location_id,
-      validatedData.campaign_id,
+      validatedData.campaign_id || null,
+      validatedData.duration_start || null,
+      validatedData.duration_end || null,
       id
     );
 
@@ -250,7 +366,11 @@ class Booking {
         existingBooking: {
           id: conflictingBooking.id,
           kundenname: conflictingBooking.kundenname,
-          berater: conflictingBooking.berater
+          berater: conflictingBooking.berater,
+          ...(conflictingBooking.duration_start && {
+            duration_start: conflictingBooking.duration_start,
+            duration_end: conflictingBooking.duration_end
+          })
         }
       };
       throw error;
@@ -259,9 +379,9 @@ class Booking {
     const queryText = `
       UPDATE bookings 
       SET kundenname = $1, kundennummer = $2, platform_id = $3, product_id = $4, 
-          location_id = $5, category_id = $6, campaign_id = $7, status = $8, 
-          berater = $9, verkaufspreis = $10, updated_at = NOW()
-      WHERE id = $11
+          location_id = $5, category_id = $6, campaign_id = $7, duration_start = $8, 
+          duration_end = $9, status = $10, berater = $11, verkaufspreis = $12, updated_at = NOW()
+      WHERE id = $13
       RETURNING *
     `;
 
@@ -272,7 +392,9 @@ class Booking {
       validatedData.product_id,
       validatedData.location_id,
       validatedData.category_id,
-      validatedData.campaign_id,
+      validatedData.campaign_id || null,
+      validatedData.duration_start || null,
+      validatedData.duration_end || null,
       validatedData.status || 'reserviert',
       validatedData.berater,
       validatedData.verkaufspreis || null,

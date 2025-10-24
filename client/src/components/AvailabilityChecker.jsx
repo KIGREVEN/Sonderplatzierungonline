@@ -4,12 +4,18 @@ import { useAuth } from '../context/AuthContext';
 const AvailabilityChecker = () => {
   const { apiRequest } = useAuth();
   
+  // Get today and one year from today as defaults
+  const today = new Date().toISOString().split('T')[0];
+  const oneYearLater = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
+  
   const [checkData, setCheckData] = useState({
     platform_id: '',
     article_type_id: '',
     location_id: '',
     category_id: '',
-    campaign_id: ''
+    campaign_id: '',
+    duration_start: today,
+    duration_end: oneYearLater
   });
 
   const [platforms, setPlatforms] = useState([]);
@@ -21,6 +27,7 @@ const AvailabilityChecker = () => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [isCampaignBased, setIsCampaignBased] = useState(true);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -81,6 +88,29 @@ const AvailabilityChecker = () => {
     setCheckData(prev => ({ ...prev, article_type_id: '' }));
   }, [checkData.platform_id, platforms, apiRequest]);
 
+  // NEW: Detect campaign mode when article type changes
+  useEffect(() => {
+    const fetchArticleTypeMode = async () => {
+      if (!checkData.article_type_id) {
+        setIsCampaignBased(true);
+        return;
+      }
+
+      try {
+        const res = await apiRequest(`/api/article-types/${checkData.article_type_id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsCampaignBased(data.data?.is_campaign_based !== false);
+        }
+      } catch (error) {
+        console.error('Error loading article type mode:', error);
+        setIsCampaignBased(true);
+      }
+    };
+
+    fetchArticleTypeMode();
+  }, [checkData.article_type_id, apiRequest]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCheckData(prev => ({
@@ -96,7 +126,16 @@ const AvailabilityChecker = () => {
     if (!checkData.article_type_id) errors.push('Artikel-Typ');
     if (!checkData.location_id) errors.push('Ort');
     if (!checkData.category_id) errors.push('Belegung (Branche)');
-    if (!checkData.campaign_id) errors.push('Kampagne');
+    
+    if (isCampaignBased) {
+      if (!checkData.campaign_id) errors.push('Kampagne');
+    } else {
+      if (!checkData.duration_start) errors.push('Startdatum');
+      if (!checkData.duration_end) errors.push('Enddatum');
+      if (checkData.duration_start && checkData.duration_end && checkData.duration_start > checkData.duration_end) {
+        errors.push('Enddatum muss nach Startdatum liegen');
+      }
+    }
 
     return errors;
   };
@@ -137,24 +176,44 @@ const AvailabilityChecker = () => {
 
       const availabilityResults = await Promise.all(
         products.map(async (product) => {
+          // Build query params based on mode
           const queryParams = new URLSearchParams({
             platform_id: checkData.platform_id,
             product_id: product.id,
             location_id: checkData.location_id,
-            category_id: checkData.category_id,
-            campaign_id: checkData.campaign_id
+            category_id: checkData.category_id
           });
+
+          if (isCampaignBased) {
+            queryParams.append('campaign_id', checkData.campaign_id);
+          }
 
           const bookingRes = await apiRequest(`/api/bookings?${queryParams}`);
           
           if (bookingRes.ok) {
             const bookingData = await bookingRes.json();
-            const existingBookings = bookingData.data || [];
+            let existingBookings = bookingData.data || [];
+            
+            // For duration-based: filter bookings that overlap with selected date range
+            if (!isCampaignBased) {
+              existingBookings = existingBookings.filter(booking => {
+                if (!booking.duration_start || !booking.duration_end) return false;
+                
+                const bookingStart = new Date(booking.duration_start);
+                const bookingEnd = new Date(booking.duration_end);
+                const checkStart = new Date(checkData.duration_start);
+                const checkEnd = new Date(checkData.duration_end);
+                
+                // Check for overlap: booking overlaps if it starts before check ends AND ends after check starts
+                return bookingStart <= checkEnd && bookingEnd >= checkStart;
+              });
+            }
             
             return {
               product: product,
               is_available: existingBookings.length === 0,
-              booking: existingBookings.length > 0 ? existingBookings[0] : null
+              booking: existingBookings.length > 0 ? existingBookings[0] : null,
+              overlapping_bookings: existingBookings.length > 1 ? existingBookings : null
             };
           }
           
@@ -199,7 +258,9 @@ const AvailabilityChecker = () => {
         </h1>
         
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          Wählen Sie Plattform, Artikel-Typ, Ort, Belegung und Kampagne aus, um zu sehen, welche Artikel verfügbar oder belegt sind.
+          {isCampaignBased 
+            ? 'Wählen Sie Plattform, Artikel-Typ, Ort, Belegung und Kampagne aus, um zu sehen, welche Artikel verfügbar oder belegt sind.'
+            : 'Wählen Sie Plattform, Artikel-Typ, Ort, Belegung und Zeitraum aus, um zu sehen, welche Artikel im gewählten Zeitraum verfügbar oder belegt sind.'}
         </p>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -285,25 +346,57 @@ const AvailabilityChecker = () => {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Kampagne *
-              </label>
-              <select
-                name="campaign_id"
-                value={checkData.campaign_id}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
-                required
-              >
-                <option value="">-- Kampagne wählen --</option>
-                {campaigns.map(campaign => (
-                  <option key={campaign.id} value={campaign.id}>
-                    {campaign.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Conditional: Campaign OR Duration */}
+            {isCampaignBased ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Kampagne *
+                </label>
+                <select
+                  name="campaign_id"
+                  value={checkData.campaign_id}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                  required
+                >
+                  <option value="">-- Kampagne wählen --</option>
+                  {campaigns.map(campaign => (
+                    <option key={campaign.id} value={campaign.id}>
+                      {campaign.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    Startdatum *
+                  </label>
+                  <input
+                    type="date"
+                    name="duration_start"
+                    value={checkData.duration_start}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    Enddatum *
+                  </label>
+                  <input
+                    type="date"
+                    name="duration_end"
+                    value={checkData.duration_end}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                    required
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {message.text && (
@@ -336,7 +429,11 @@ const AvailabilityChecker = () => {
             <p><strong>Plattform:</strong> {platform?.name}</p>
             <p><strong>Ort:</strong> {location?.name}</p>
             <p><strong>Belegung:</strong> {category?.name}</p>
-            <p><strong>Kampagne:</strong> {campaign?.label}</p>
+            {isCampaignBased ? (
+              <p><strong>Kampagne:</strong> {campaign?.label}</p>
+            ) : (
+              <p><strong>Zeitraum:</strong> {checkData.duration_start} bis {checkData.duration_end}</p>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -397,6 +494,14 @@ const AvailabilityChecker = () => {
                               </span>
                             </p>
                           </div>
+                          {result.booking.duration_start && result.booking.duration_end ? (
+                            <div className="col-span-2">
+                              <span className="text-gray-600 dark:text-gray-400">Zeitraum:</span>
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {new Date(result.booking.duration_start).toLocaleDateString('de-DE')} - {new Date(result.booking.duration_end).toLocaleDateString('de-DE')}
+                              </p>
+                            </div>
+                          ) : null}
                           {result.booking.verkaufspreis && (
                             <div>
                               <span className="text-gray-600 dark:text-gray-400">Verkaufspreis:</span>

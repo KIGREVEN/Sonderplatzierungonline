@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 const BookingForm = ({ onBookingCreated }) => {
   const { user, apiRequest } = useAuth();
   
-  // Form state - SIMPLIFIED (no dates!)
+  // Form state - supports both campaign and duration modes
   const [formData, setFormData] = useState({
     kundenname: '',
     kundennummer: '',
@@ -14,6 +14,8 @@ const BookingForm = ({ onBookingCreated }) => {
     category_id: '',
     location_id: '',
     campaign_id: '',
+    duration_start: '',
+    duration_end: '',
     status: 'reserviert',
     berater: '',
     verkaufspreis: ''
@@ -30,6 +32,7 @@ const BookingForm = ({ onBookingCreated }) => {
   // UI state
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [isCampaignBased, setIsCampaignBased] = useState(true); // Default: campaign mode
 
   // Load initial data (platforms, categories, locations, campaigns)
   useEffect(() => {
@@ -100,6 +103,7 @@ const BookingForm = ({ onBookingCreated }) => {
     const fetchProducts = async () => {
       if (!formData.article_type_id) {
         setProducts([]);
+        setIsCampaignBased(true); // Reset to default
         return;
       }
 
@@ -116,7 +120,27 @@ const BookingForm = ({ onBookingCreated }) => {
 
     fetchProducts();
     // Reset product selection
-    setFormData(prev => ({ ...prev, product_id: '' }));
+    setFormData(prev => ({ ...prev, product_id: '', campaign_id: '', duration_start: '', duration_end: '' }));
+  }, [formData.article_type_id, apiRequest]);
+
+  // NEW: Detect campaign mode when article type changes
+  useEffect(() => {
+    const fetchArticleTypeMode = async () => {
+      if (!formData.article_type_id) return;
+
+      try {
+        const res = await apiRequest(`/api/article-types/${formData.article_type_id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsCampaignBased(data.data?.is_campaign_based !== false); // Default true if missing
+        }
+      } catch (error) {
+        console.error('Error loading article type mode:', error);
+        setIsCampaignBased(true); // Safe default
+      }
+    };
+
+    fetchArticleTypeMode();
   }, [formData.article_type_id, apiRequest]);
 
   const handleInputChange = (e) => {
@@ -136,7 +160,18 @@ const BookingForm = ({ onBookingCreated }) => {
     if (!formData.product_id) errors.push('Artikel ist erforderlich');
     if (!formData.category_id) errors.push('Branche ist erforderlich');
     if (!formData.location_id) errors.push('Ort ist erforderlich');
-    if (!formData.campaign_id) errors.push('Kampagne ist erforderlich');
+    
+    // Conditional validation based on article type mode
+    if (isCampaignBased) {
+      if (!formData.campaign_id) errors.push('Kampagne ist erforderlich');
+    } else {
+      if (!formData.duration_start) errors.push('Startdatum ist erforderlich');
+      if (!formData.duration_end) errors.push('Enddatum ist erforderlich');
+      if (formData.duration_start && formData.duration_end && formData.duration_start > formData.duration_end) {
+        errors.push('Enddatum muss nach dem Startdatum liegen');
+      }
+    }
+    
     if (!formData.berater.trim()) errors.push('Berater ist erforderlich');
 
     return errors;
@@ -165,13 +200,20 @@ const BookingForm = ({ onBookingCreated }) => {
         product_id: parseInt(formData.product_id),
         category_id: parseInt(formData.category_id),
         location_id: parseInt(formData.location_id),
-        campaign_id: parseInt(formData.campaign_id),
         status: formData.status,
         berater: formData.berater,
         verkaufspreis: formData.verkaufspreis ? parseFloat(formData.verkaufspreis) : null
       };
 
-      console.log('Sending simplified booking data:', apiData);
+      // Add campaign_id OR duration fields based on mode
+      if (isCampaignBased) {
+        apiData.campaign_id = parseInt(formData.campaign_id);
+      } else {
+        apiData.duration_start = formData.duration_start;
+        apiData.duration_end = formData.duration_end;
+      }
+
+      console.log('Sending booking data:', apiData);
 
       const response = await apiRequest('/api/bookings', {
         method: 'POST',
@@ -199,6 +241,8 @@ const BookingForm = ({ onBookingCreated }) => {
           category_id: '',
           location_id: '',
           campaign_id: '',
+          duration_start: '',
+          duration_end: '',
           status: 'reserviert',
           berater: '',
           verkaufspreis: ''
@@ -398,26 +442,57 @@ const BookingForm = ({ onBookingCreated }) => {
           </select>
         </div>
 
-        {/* Kampagne (Campaign) */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-            Kampagne *
-          </label>
-          <select
-            name="campaign_id"
-            value={formData.campaign_id}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
-            required
-          >
-            <option value="">-- Kampagne wählen --</option>
-            {campaigns.map(campaign => (
-              <option key={campaign.id} value={campaign.id}>
-                {campaign.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Conditional: Kampagne (Campaign) OR Laufzeit (Duration) */}
+        {isCampaignBased ? (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Kampagne *
+            </label>
+            <select
+              name="campaign_id"
+              value={formData.campaign_id}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+              required
+            >
+              <option value="">-- Kampagne wählen --</option>
+              {campaigns.map(campaign => (
+                <option key={campaign.id} value={campaign.id}>
+                  {campaign.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Startdatum *
+              </label>
+              <input
+                type="date"
+                name="duration_start"
+                value={formData.duration_start}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Enddatum *
+              </label>
+              <input
+                type="date"
+                name="duration_end"
+                value={formData.duration_end}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                required
+              />
+            </div>
+          </div>
+        )}
 
         {/* Status */}
         <div>

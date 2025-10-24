@@ -28,7 +28,8 @@ export default function ProductsPage(){
   })
   const [typeFormData, setTypeFormData] = useState({
     name: '',
-    description: ''
+    description: '',
+    is_campaign_based: true
   })
 
   const fetchArticleTypes = async () => {
@@ -148,7 +149,8 @@ export default function ProductsPage(){
         body: JSON.stringify({
           key: generatedKey,
           name: typeFormData.name,
-          description: typeFormData.description
+          description: typeFormData.description,
+          is_campaign_based: typeFormData.is_campaign_based
         })
       })
 
@@ -157,7 +159,8 @@ export default function ProductsPage(){
         fetchArticleTypes()
         setTypeFormData({
           name: '',
-          description: ''
+          description: '',
+          is_campaign_based: true
         })
       }
     } catch(e) {
@@ -184,7 +187,8 @@ export default function ProductsPage(){
                 <Button variant="outline" onClick={() => {
                   setTypeFormData({
                     name: '',
-                    description: ''
+                    description: '',
+                    is_campaign_based: true
                   })
                 }} className="border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-200">
                   Artikel-Typ hinzufügen
@@ -215,6 +219,23 @@ export default function ProductsPage(){
                       onChange={(e) => setTypeFormData(prev => ({...prev, description: e.target.value}))}
                       placeholder="Beschreibung (optional)"
                       className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                    <div className="space-y-0.5">
+                      <Label className="text-gray-900 dark:text-gray-200 font-medium">
+                        Kampagnen-basiert
+                      </Label>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {typeFormData.is_campaign_based 
+                          ? 'Buchungen benötigen eine Kampagne' 
+                          : 'Buchungen benötigen Start- und Enddatum'}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={typeFormData.is_campaign_based}
+                      onCheckedChange={(checked) => setTypeFormData(prev => ({...prev, is_campaign_based: checked}))}
+                      className="data-[state=checked]:bg-red-600"
                     />
                   </div>
                   <div className="flex justify-end space-x-2 mt-4">
