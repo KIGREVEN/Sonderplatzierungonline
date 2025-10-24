@@ -82,7 +82,7 @@ const EditBookingModal = ({ booking, isOpen, onClose, onBookingUpdated }) => {
         kundenname: booking.kundenname || '',
         kundennummer: booking.kundennummer || '',
         platform_id: booking.platform_id || '',
-        article_type_id: booking.article_type_id || booking.product?.article_type_id || '',
+        article_type_id: '', // wird nachgeladen
         product_id: booking.product_id || '',
         category_id: booking.category_id || '',
         location_id: booking.location_id || '',
