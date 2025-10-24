@@ -72,6 +72,30 @@ const EditBookingModal = ({ booking, isOpen, onClose, onBookingUpdated }) => {
   }, [isOpen, apiRequest]);
 
   // Fill form with booking data when modal opens
+// Load products for booking.product_id directly after modal opens, if article_type_id is not set
+useEffect(() => {
+  if (!isOpen || !booking || !booking.product_id || formData.article_type_id) return;
+  // Lade Produktdaten direkt
+  const fetchProduct = async () => {
+    try {
+      const res = await apiRequest(`/api/products/${booking.product_id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.data?.article_type_id) {
+          // Lade alle Produkte für diesen article_type_id
+          const prodRes = await apiRequest(`/api/products?articleTypeId=${data.data.article_type_id}&active_only=true`);
+          if (prodRes.ok) {
+            const prodData = await prodRes.json();
+            setProducts(prodData.data || []);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading product for modal:', error);
+    }
+  };
+  fetchProduct();
+}, [isOpen, booking, formData.article_type_id, apiRequest]);
   useEffect(() => {
     if (booking && isOpen) {
       // Detect mode from booking data
