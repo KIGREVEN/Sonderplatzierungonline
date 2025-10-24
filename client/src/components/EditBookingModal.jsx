@@ -175,50 +175,30 @@ const EditBookingModal = ({ booking, isOpen, onClose, onBookingUpdated }) => {
   }, [formData.article_type_id, isOpen, apiRequest, booking]);
 
   // Load article_type_id from product when editing existing booking
+  // Set article_type_id after products and articleTypes are loaded and booking.product_id is present
   useEffect(() => {
-    const fetchProductArticleType = async () => {
-      if (!formData.product_id || !isOpen) return;
-      // Only load if article_type_id is not already set
-      if (formData.article_type_id) return;
-
-      try {
-        const res = await apiRequest(`/api/products/${formData.product_id}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.data?.article_type_id) {
-            setFormData(prev => ({
-              ...prev,
-              article_type_id: data.data.article_type_id
-            }));
-            
-            // Detect campaign mode from article type, but respect existing booking data
-            const articleTypeRes = await apiRequest(`/api/article-types/${data.data.article_type_id}`);
-            if (articleTypeRes.ok) {
-              const articleTypeData = await articleTypeRes.json();
-              const articleTypeIsCampaignBased = articleTypeData.data?.is_campaign_based !== false;
-              
-              // If booking has duration fields and article type is NOT campaign-based, use duration mode
-              if (booking && booking.duration_start && booking.duration_end && !articleTypeIsCampaignBased) {
-                setIsCampaignBased(false);
-              } 
-              // If booking has campaign and article type IS campaign-based, use campaign mode
-              else if (booking && booking.campaign_id && articleTypeIsCampaignBased) {
-                setIsCampaignBased(true);
-              }
-              // Otherwise use article type default
-              else {
-                setIsCampaignBased(articleTypeIsCampaignBased);
-              }
-            }
-          }
+    if (!isOpen || !booking || !booking.product_id || products.length === 0 || articleTypes.length === 0) return;
+    // Finde das Produkt in der geladenen Liste
+    const product = products.find(p => p.id === parseInt(booking.product_id));
+    if (product && product.article_type_id) {
+      setFormData(prev => ({
+        ...prev,
+        article_type_id: product.article_type_id
+      }));
+      // Detect campaign mode from article type
+      const articleType = articleTypes.find(a => a.id === product.article_type_id);
+      if (articleType) {
+        const articleTypeIsCampaignBased = articleType.is_campaign_based !== false;
+        if (booking.duration_start && booking.duration_end && !articleTypeIsCampaignBased) {
+          setIsCampaignBased(false);
+        } else if (booking.campaign_id && articleTypeIsCampaignBased) {
+          setIsCampaignBased(true);
+        } else {
+          setIsCampaignBased(articleTypeIsCampaignBased);
         }
-      } catch (error) {
-        console.error('Error loading product details:', error);
       }
-    };
-
-    fetchProductArticleType();
-  }, [formData.product_id, formData.article_type_id, isOpen, booking, apiRequest]);
+    }
+  }, [isOpen, booking, products, articleTypes]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
