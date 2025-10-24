@@ -1,3 +1,9 @@
+const express = require('express');
+const router = express.Router();
+const Product = require('../models/Product');
+const { optionalAuth, authenticateToken, requireAdmin } = require('../middleware/auth');
+const { query } = require('../config/database');
+
 // GET /products/:id
 router.get('/:id', optionalAuth, async (req, res, next) => {
   try {
@@ -18,11 +24,6 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
     next(error);
   }
 });
-const express = require('express');
-const router = express.Router();
-const Product = require('../models/Product');
-const { optionalAuth, authenticateToken, requireAdmin } = require('../middleware/auth');
-const { query } = require('../config/database');
 
 // GET /products?platformKey=&articleTypeId=&active_only=
 router.get('/', optionalAuth, async (req, res, next) => {
