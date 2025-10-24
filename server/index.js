@@ -81,7 +81,12 @@ app.use('/api/', limiter);
 
 // CORS configuration
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://217.110.253.198:5173'],
+  origin: [
+    'http://localhost:5173',
+    'http://217.110.253.198:5173',
+    'http://sonderplatzierung.greven.de',
+    'https://sonderplatzierung.greven.de'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
