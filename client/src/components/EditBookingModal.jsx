@@ -75,15 +75,29 @@ const EditBookingModal = ({ booking, isOpen, onClose, onBookingUpdated }) => {
 // Load products for booking.product_id directly after modal opens, if article_type_id is not set
 useEffect(() => {
   if (!isOpen || !booking || !booking.product_id || formData.article_type_id) return;
-  // Lade Produktdaten direkt
-  const fetchProduct = async () => {
+  // Lade articleTypes für platform_id, falls noch leer
+  const fetchTypesAndProducts = async () => {
     try {
+      let articleTypeId;
+      if (articleTypes.length === 0 && booking.platform_id) {
+        const platformRes = await apiRequest(`/api/platforms/${booking.platform_id}`);
+        if (platformRes.ok) {
+          const platformData = await platformRes.json();
+          const typesRes = await apiRequest(`/api/article-types?platform_key=${encodeURIComponent(platformData.data.key)}`);
+          if (typesRes.ok) {
+            const typesData = await typesRes.json();
+            setArticleTypes(typesData.data || []);
+          }
+        }
+      }
+      // Lade Produktdaten direkt
       const res = await apiRequest(`/api/products/${booking.product_id}`);
       if (res.ok) {
         const data = await res.json();
-        if (data.data?.article_type_id) {
+        articleTypeId = data.data?.article_type_id;
+        if (articleTypeId) {
           // Lade alle Produkte für diesen article_type_id
-          const prodRes = await apiRequest(`/api/products?articleTypeId=${data.data.article_type_id}&active_only=true`);
+          const prodRes = await apiRequest(`/api/products?articleTypeId=${articleTypeId}&active_only=true`);
           if (prodRes.ok) {
             const prodData = await prodRes.json();
             setProducts(prodData.data || []);
@@ -91,11 +105,11 @@ useEffect(() => {
         }
       }
     } catch (error) {
-      console.error('Error loading product for modal:', error);
+      console.error('Error loading product/articleTypes for modal:', error);
     }
   };
-  fetchProduct();
-}, [isOpen, booking, formData.article_type_id, apiRequest]);
+  fetchTypesAndProducts();
+}, [isOpen, booking, formData.article_type_id, articleTypes.length, apiRequest]);
   useEffect(() => {
     if (booking && isOpen) {
       // Detect mode from booking data
