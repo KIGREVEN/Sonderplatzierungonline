@@ -74,6 +74,10 @@ const EditBookingModal = ({ booking, isOpen, onClose, onBookingUpdated }) => {
   // Fill form with booking data when modal opens
   useEffect(() => {
     if (booking && isOpen) {
+      // Detect mode from booking data
+      const hasDateRange = booking.duration_start && booking.duration_end;
+      const hasCampaign = booking.campaign_id;
+      
       setFormData({
         kundenname: booking.kundenname || '',
         kundennummer: booking.kundennummer || '',
@@ -89,6 +93,13 @@ const EditBookingModal = ({ booking, isOpen, onClose, onBookingUpdated }) => {
         berater: booking.berater || '',
         verkaufspreis: booking.verkaufspreis || ''
       });
+      
+      // Set initial campaign mode based on data
+      if (hasDateRange && !hasCampaign) {
+        setIsCampaignBased(false);
+      } else {
+        setIsCampaignBased(true);
+      }
     }
   }, [booking, isOpen]);
 
@@ -165,7 +176,7 @@ const EditBookingModal = ({ booking, isOpen, onClose, onBookingUpdated }) => {
   // Load article_type_id from product when editing existing booking
   useEffect(() => {
     const fetchProductArticleType = async () => {
-      if (!formData.product_id || !isOpen || formData.article_type_id) return;
+      if (!formData.product_id || !isOpen) return;
 
       try {
         const res = await apiRequest(`/api/products/${formData.product_id}`);
@@ -176,6 +187,13 @@ const EditBookingModal = ({ booking, isOpen, onClose, onBookingUpdated }) => {
               ...prev,
               article_type_id: data.data.article_type_id
             }));
+            
+            // Also detect campaign mode from article type
+            const articleTypeRes = await apiRequest(`/api/article-types/${data.data.article_type_id}`);
+            if (articleTypeRes.ok) {
+              const articleTypeData = await articleTypeRes.json();
+              setIsCampaignBased(articleTypeData.data?.is_campaign_based !== false);
+            }
           }
         }
       } catch (error) {
