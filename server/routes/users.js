@@ -40,10 +40,10 @@ router.post('/', authenticateToken, requireAdmin, async (req, res, next) => {
       });
     }
 
-    if (role && !['admin', 'viewer'].includes(role)) {
+    if (role && !['admin', 'viewer', 'bearbeiter'].includes(role)) {
       return res.status(400).json({
         success: false,
-        message: 'Role muss "admin" oder "viewer" sein'
+        message: 'Role muss "admin", "viewer" oder "bearbeiter" sein'
       });
     }
 
@@ -101,10 +101,10 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res, next) => {
     }
 
     // Validierung
-    if (role && !['admin', 'viewer'].includes(role)) {
+    if (role && !['admin', 'viewer', 'bearbeiter'].includes(role)) {
       return res.status(400).json({
         success: false,
-        message: 'Role muss "admin" oder "viewer" sein'
+        message: 'Role muss "admin", "viewer" oder "bearbeiter" sein'
       });
     }
 

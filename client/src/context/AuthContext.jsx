@@ -155,6 +155,14 @@ export const AuthProvider = ({ children }) => {
     return user && user.role === 'admin';
   };
 
+  const isBearbeiter = () => {
+    return user && user.role === 'bearbeiter';
+  };
+
+  const isPrivileged = () => {
+    return user && (user.role === 'admin' || user.role === 'bearbeiter');
+  };
+
   const isViewer = () => {
     return user && user.role === 'viewer';
   };
@@ -168,6 +176,11 @@ export const AuthProvider = ({ children }) => {
     
     // Admin hat alle Berechtigungen
     if (isAdmin()) return true;
+
+    // Bearbeiter: Lesen, Verfügbarkeit + CRUD auf Buchungen & ähnliche Aktionen
+    if (isBearbeiter()) {
+      return ['read', 'view', 'availability', 'create', 'update', 'delete'].includes(action);
+    }
     
     // Viewer-Berechtigungen
     if (isViewer()) {
@@ -224,6 +237,8 @@ export const AuthProvider = ({ children }) => {
     // Helpers
     isAdmin,
     isViewer,
+  isBearbeiter,
+  isPrivileged,
     isAuthenticated,
     hasPermission,
     apiRequest,

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Booking = require('../models/Booking');
-const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, optionalAuth, requireAnyRole } = require('../middleware/auth');
 
 // GET /api/bookings - Get all bookings with optional filters (Auth required)
 router.get('/', authenticateToken, async (req, res, next) => {
@@ -68,8 +68,8 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// POST /api/bookings - Create new booking (Admin only)
-router.post('/', authenticateToken, requireAdmin, async (req, res, next) => {
+// POST /api/bookings - Create new booking (Admin oder Bearbeiter)
+router.post('/', authenticateToken, requireAnyRole(['admin', 'bearbeiter']), async (req, res, next) => {
   try {
     const bookingData = req.body;
     
@@ -110,8 +110,8 @@ router.post('/', authenticateToken, requireAdmin, async (req, res, next) => {
   }
 });
 
-// PUT /api/bookings/:id - Update booking (Admin only)
-router.put('/:id', authenticateToken, requireAdmin, async (req, res, next) => {
+// PUT /api/bookings/:id - Update booking (Admin oder Bearbeiter)
+router.put('/:id', authenticateToken, requireAnyRole(['admin', 'bearbeiter']), async (req, res, next) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -166,8 +166,8 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res, next) => {
   }
 });
 
-// DELETE /api/bookings/:id - Delete booking (Admin only)
-router.delete('/:id', authenticateToken, requireAdmin, async (req, res, next) => {
+// DELETE /api/bookings/:id - Delete booking (Admin oder Bearbeiter)
+router.delete('/:id', authenticateToken, requireAnyRole(['admin', 'bearbeiter']), async (req, res, next) => {
   try {
     const { id } = req.params;
     
@@ -198,7 +198,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res, next) =>
 });
 
 // Clean up expired reservations (older than 30 minutes)
-router.post('/cleanup', authenticateToken, requireAdmin, async (req, res, next) => {
+router.post('/cleanup', authenticateToken, requireAnyRole(['admin', 'bearbeiter']), async (req, res, next) => {
   try {
     const cleanedBookings = await Booking.cleanupExpiredReservations();
     

@@ -4,7 +4,7 @@ import DatePicker from './DatePicker'; // Import der neuen DatePicker-Komponente
 import EditBookingModal from './EditBookingModal';
 
 const BookingOverview = () => {
-  const { apiRequest, isAdmin, hasPermission } = useAuth();
+  const { apiRequest, isAdmin, isBearbeiter } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -446,7 +446,7 @@ const BookingOverview = () => {
                   </td>
                   <td className="px-1 py-4 text-center" style={{width: '5%'}}>
                     <div className="flex gap-1 justify-center">
-                      {isAdmin() && (
+                      {(isAdmin() || isBearbeiter()) && (
                         <>
                           <button
                             onClick={() => openEditModal(booking)}
@@ -464,7 +464,7 @@ const BookingOverview = () => {
                           </button>
                         </>
                       )}
-                      {!isAdmin() && (
+                      {!(isAdmin() || isBearbeiter()) && (
                         <span className="text-gray-400 dark:text-gray-500 text-xs" title="Nur für Administratoren">
                           👁️
                         </span>

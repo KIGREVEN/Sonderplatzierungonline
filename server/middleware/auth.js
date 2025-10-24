@@ -56,7 +56,7 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-// Middleware zur Rollen-Überprüfung
+// Middleware zur Rollen-Überprüfung (einzelne Rolle)
 const requireRole = (requiredRole) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -73,6 +73,28 @@ const requireRole = (requiredRole) => {
       });
     }
 
+    next();
+  };
+};
+
+// Middleware zur Rollen-Überprüfung (irgendeine Rolle aus Liste)
+const requireAnyRole = (roles = []) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentifizierung erforderlich.'
+      });
+    }
+    if (!Array.isArray(roles) || roles.length === 0) {
+      return res.status(500).json({ success: false, message: 'Fehlende Rollen-Konfiguration' });
+    }
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Zugriff verweigert. Erforderliche Rollen: ${roles.join(', ')}.`
+      });
+    }
     next();
   };
 };
@@ -135,10 +157,16 @@ const hasPermission = (user, action, resource) => {
   if (!user) return false;
   
   // Admin hat alle Berechtigungen
-  if (user.isAdmin()) return true;
+  if (user.isAdmin && user.isAdmin()) return true;
+
+  // Bearbeiter: nahezu alle Berechtigungen außer Verwaltungsfunktionen (werden Route-seitig über requireAdmin geschützt)
+  if (user.isBearbeiter && user.isBearbeiter()) {
+    // Standardmäßig lesen/schreiben erlaubt
+    if (['read', 'view', 'availability', 'create', 'update', 'delete'].includes(action)) return true;
+  }
   
   // Viewer-Berechtigungen
-  if (user.isViewer()) {
+  if (user.isViewer && user.isViewer()) {
     // Viewer kann nur lesen
     if (action === 'read') return true;
     
@@ -155,6 +183,7 @@ const hasPermission = (user, action, resource) => {
 module.exports = {
   authenticateToken,
   requireRole,
+  requireAnyRole,
   requireAdmin,
   optionalAuth,
   hasPermission

@@ -40,9 +40,9 @@ function useDarkMode() {
 
 // Rollenbasierte Weiterleitung
 function RoleBasedRedirect() {
-  const { isAdmin } = useAuth()
+  const { isAdmin, isBearbeiter } = useAuth()
   
-  if (isAdmin()) {
+  if (isAdmin() || isBearbeiter()) {
     return <Navigate to="/overview" replace />
   } else {
     return <Navigate to="/availability" replace />
@@ -54,7 +54,7 @@ function Navigation() {
   const [isVerwaltungOpen, setIsVerwaltungOpen] = useState(false)
   const [isDark, setIsDark] = useDarkMode()
   const location = useLocation()
-  const { isAuthenticated, isAdmin, hasPermission } = useAuth()
+  const { isAuthenticated, isAdmin, isBearbeiter } = useAuth()
 
   const isActive = (path) => location.pathname === path
   const isVerwaltungActive = () => {
@@ -85,7 +85,7 @@ function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-2">
             {/* Übersicht */}
-            {isAdmin() && (
+            {(isAdmin() || isBearbeiter()) && (
               <Link
                 to="/overview"
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 btn-modern ${
@@ -100,7 +100,7 @@ function Navigation() {
             )}
 
             {/* Neue Buchung */}
-            {isAdmin() && (
+            {(isAdmin() || isBearbeiter()) && (
               <Link
                 to="/booking"
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 btn-modern ${
@@ -115,6 +115,7 @@ function Navigation() {
             )}
 
             {/* Verwaltung Dropdown */}
+            {isAdmin() && (
             <div className="relative">
               <button
                 onClick={() => setIsVerwaltungOpen(!isVerwaltungOpen)}
@@ -177,6 +178,7 @@ function Navigation() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Verfügbarkeit */}
             <Link
@@ -236,7 +238,7 @@ function Navigation() {
           <div className="md:hidden animate-slide-in">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {/* Übersicht */}
-              {isAdmin() && (
+              {(isAdmin() || isBearbeiter()) && (
                 <Link
                   to="/overview"
                   className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
@@ -252,7 +254,7 @@ function Navigation() {
               )}
 
               {/* Neue Buchung */}
-              {isAdmin() && (
+              {(isAdmin() || isBearbeiter()) && (
                 <Link
                   to="/booking"
                   className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
@@ -268,7 +270,7 @@ function Navigation() {
               )}
 
               {/* Verwaltung - Mobile */}
-              <div className="px-4 py-2">
+              {isAdmin() && (<div className="px-4 py-2">
                 <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                   ⚙️ Verwaltung
                 </div>
@@ -340,7 +342,7 @@ function Navigation() {
                     👥 Benutzer
                   </Link>
                 </div>
-              </div>
+              </div>)}
 
               {/* Verfügbarkeit */}
               <Link
@@ -364,7 +366,7 @@ function Navigation() {
 }
 
 function Dashboard() {
-  const { isAdmin, hasPermission, apiRequest } = useAuth()
+  const { isAdmin, isBearbeiter, apiRequest } = useAuth()
   const [stats, setStats] = useState({
     activeBookings: 0,
     availablePlaces: 0,
@@ -417,7 +419,7 @@ function Dashboard() {
               Willkommen zurück! Hier ist deine Übersicht.
             </p>
           </div>
-          {isAdmin() && (
+          {(isAdmin() || isBearbeiter()) && (
             <div className="mt-6 sm:mt-0">
               <Link to="/booking">
                 <Button className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg shadow-red-500/50 btn-modern">
@@ -518,12 +520,14 @@ function Dashboard() {
                 🔍 Verfügbarkeit prüfen
               </Button>
             </Link>
-            <Link to="/bookings" className="block">
-              <Button variant="outline" className="w-full justify-start h-12 btn-modern hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent">
-                <List className="h-5 w-5 mr-3" />
-                📅 Alle Buchungen anzeigen
-              </Button>
-            </Link>
+            {isAdmin() && (
+              <Link to="/bookings" className="block">
+                <Button variant="outline" className="w-full justify-start h-12 btn-modern hover:bg-gradient-to-r hover:from-red-500 hover:to-orange-500 hover:text-white hover:border-transparent">
+                  <List className="h-5 w-5 mr-3" />
+                  📅 Alle Buchungen anzeigen
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -599,7 +603,7 @@ function App() {
                 <Route 
                   path="/overview" 
                   element={
-                    <ProtectedRoute requireAdmin={true}>
+                    <ProtectedRoute roles={['admin','bearbeiter']}>
                       <BookingOverview />
                     </ProtectedRoute>
                   } 
@@ -607,17 +611,52 @@ function App() {
                 <Route 
                   path="/booking" 
                   element={
-                    <ProtectedRoute requireAdmin={true}>
+                    <ProtectedRoute roles={['admin','bearbeiter']}>
                       <BookingForm />
                     </ProtectedRoute>
                   } 
                 />
                 <Route path="/availability" element={<AvailabilityChecker />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/locations" element={<LocationsPage />} />
-                <Route path="/campaigns" element={<CampaignsPage />} />
-                <Route path="/categories" element={<CategoriesPage />} />
-                <Route path="/bookings" element={<BookingsPage />} />
+                <Route 
+                  path="/products" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <ProductsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/locations" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <LocationsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/campaigns" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <CampaignsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/categories" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <CategoriesPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/bookings" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <BookingsPage />
+                    </ProtectedRoute>
+                  } 
+                />
                 <Route 
                   path="/users" 
                   element={

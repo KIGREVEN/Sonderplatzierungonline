@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 
 const UserProfile = () => {
-  const { user, logout, isAdmin, isViewer } = useAuth();
+  const { user, logout, isAdmin, isViewer, isBearbeiter } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = async () => {
@@ -18,6 +18,12 @@ const UserProfile = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       );
+    } else if (isBearbeiter()) {
+      return (
+        <svg className="h-5 w-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m-4-4h8" />
+        </svg>
+      );
     } else {
       return (
         <svg className="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,6 +36,8 @@ const UserProfile = () => {
   const getRoleDescription = () => {
     if (isAdmin()) {
       return 'Vollzugriff auf alle Funktionen';
+    } else if (isBearbeiter()) {
+      return 'Buchungen verwalten (ohne Verwaltung)';
     } else if (isViewer()) {
       return 'Nur Verfügbarkeitsprüfung';
     }
@@ -45,6 +53,14 @@ const UserProfile = () => {
         'Buchungen löschen',
         'Verfügbarkeitsprüfung',
         'Benutzerverwaltung'
+      ];
+    } else if (isBearbeiter()) {
+      return [
+        'Buchungen anzeigen',
+        'Buchungen erstellen',
+        'Buchungen bearbeiten',
+        'Buchungen löschen',
+        'Verfügbarkeitsprüfung'
       ];
     } else if (isViewer()) {
       return [
@@ -153,7 +169,7 @@ const UserProfile = () => {
 
 // Erweiterte UserProfile-Komponente mit Details
 export const UserProfileDetailed = () => {
-  const { user, isAdmin, isViewer } = useAuth();
+  const { user, isAdmin, isViewer, isBearbeiter } = useAuth();
 
   if (!user) {
     return null;
@@ -168,6 +184,14 @@ export const UserProfileDetailed = () => {
         'Buchungen löschen',
         'Verfügbarkeitsprüfung',
         'Benutzerverwaltung'
+      ];
+    } else if (isBearbeiter()) {
+      return [
+        'Buchungen anzeigen',
+        'Buchungen erstellen',
+        'Buchungen bearbeiten',
+        'Buchungen löschen',
+        'Verfügbarkeitsprüfung'
       ];
     } else if (isViewer()) {
       return [

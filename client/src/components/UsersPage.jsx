@@ -186,10 +186,11 @@ export default function UsersPage() {
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="viewer">Betrachter (Viewer)</option>
+                    <option value="bearbeiter">Bearbeiter</option>
                     <option value="admin">Administrator</option>
                   </select>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Viewer können nur lesen, Admins haben volle Rechte
+                    Viewer können nur lesen, Bearbeiter können Buchungen bearbeiten, Admins haben volle Rechte
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -269,6 +270,11 @@ export default function UsersPage() {
                           <>
                             <Shield className="h-4 w-4 text-red-600 dark:text-red-400 mr-2" />
                             <span className="text-sm text-gray-900 dark:text-white">Administrator</span>
+                          </>
+                        ) : u.role === 'bearbeiter' ? (
+                          <>
+                            <User className="h-4 w-4 text-orange-600 dark:text-orange-400 mr-2" />
+                            <span className="text-sm text-gray-900 dark:text-white">Bearbeiter</span>
                           </>
                         ) : (
                           <>

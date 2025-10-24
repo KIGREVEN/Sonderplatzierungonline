@@ -22,8 +22,8 @@ class User {
       throw new Error('Username und Password sind erforderlich');
     }
 
-    if (!['admin', 'viewer'].includes(role)) {
-      throw new Error('Role muss "admin" oder "viewer" sein');
+    if (!['admin', 'viewer', 'bearbeiter'].includes(role)) {
+      throw new Error('Role muss "admin", "viewer" oder "bearbeiter" sein');
     }
 
     // Prüfe ob Username bereits existiert
@@ -135,6 +135,11 @@ class User {
     return this.role === 'admin';
   }
 
+  // Prüfe ob Benutzer Bearbeiter ist
+  isBearbeiter() {
+    return this.role === 'bearbeiter';
+  }
+
   // Prüfe ob Benutzer Viewer ist
   isViewer() {
     return this.role === 'viewer';
@@ -142,8 +147,8 @@ class User {
 
   // Aktualisiere Benutzer-Rolle (nur für Admins)
   async updateRole(newRole) {
-    if (!['admin', 'viewer'].includes(newRole)) {
-      throw new Error('Role muss "admin" oder "viewer" sein');
+    if (!['admin', 'viewer', 'bearbeiter'].includes(newRole)) {
+      throw new Error('Role muss "admin", "viewer" oder "bearbeiter" sein');
     }
 
     const result = await query(
