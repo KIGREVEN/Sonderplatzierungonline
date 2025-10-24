@@ -212,28 +212,29 @@ useEffect(() => {
     fetchArticleTypeMode();
   }, [formData.article_type_id, isOpen, apiRequest, booking]);
 
-  // Load article_type_id from product when editing existing booking
-  // Set article_type_id after products and articleTypes are loaded and booking.product_id is present
+  // Optimierte automatische Vorbefüllung von article_type_id
   useEffect(() => {
-    if (!isOpen || !booking || !booking.product_id || products.length === 0 || articleTypes.length === 0) return;
+    if (!isOpen || !booking || !booking.product_id) return;
     if (formData.article_type_id) return;
-    // Finde das Produkt in der geladenen Liste
-    const product = products.find(p => p.id === parseInt(booking.product_id));
-    if (product && product.article_type_id) {
-      setFormData(prev => ({
-        ...prev,
-        article_type_id: product.article_type_id
-      }));
-      // Detect campaign mode from article type
-      const articleType = articleTypes.find(a => a.id === product.article_type_id);
-      if (articleType) {
-        const articleTypeIsCampaignBased = articleType.is_campaign_based !== false;
-        if (booking.duration_start && booking.duration_end && !articleTypeIsCampaignBased) {
-          setIsCampaignBased(false);
-        } else if (booking.campaign_id && articleTypeIsCampaignBased) {
-          setIsCampaignBased(true);
-        } else {
-          setIsCampaignBased(articleTypeIsCampaignBased);
+    // Prüfe, ob Produkte und Artikeltypen geladen sind
+    if (products.length > 0 && articleTypes.length > 0) {
+      const product = products.find(p => p.id === parseInt(booking.product_id));
+      if (product && product.article_type_id) {
+        setFormData(prev => ({
+          ...prev,
+          article_type_id: product.article_type_id
+        }));
+        // Detect campaign mode from article type
+        const articleType = articleTypes.find(a => a.id === product.article_type_id);
+        if (articleType) {
+          const articleTypeIsCampaignBased = articleType.is_campaign_based !== false;
+          if (booking.duration_start && booking.duration_end && !articleTypeIsCampaignBased) {
+            setIsCampaignBased(false);
+          } else if (booking.campaign_id && articleTypeIsCampaignBased) {
+            setIsCampaignBased(true);
+          } else {
+            setIsCampaignBased(articleTypeIsCampaignBased);
+          }
         }
       }
     }
