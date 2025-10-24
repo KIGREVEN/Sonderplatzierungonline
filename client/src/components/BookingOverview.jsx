@@ -405,9 +405,19 @@ const BookingOverview = () => {
                     </div>
                   </td>
                   <td className="px-2 py-4 text-sm text-gray-900 dark:text-gray-200" style={{width: '8%'}}>
-                    <div className="truncate" title={booking.campaign_name}>
-                      {booking.campaign_name || '-'}
-                    </div>
+                    {booking.campaign_name ? (
+                      <div className="truncate" title={booking.campaign_name}>
+                        {booking.campaign_name}
+                      </div>
+                    ) : booking.duration_start && booking.duration_end ? (
+                      <div className="text-xs" title={`${new Date(booking.duration_start).toLocaleDateString('de-DE')} - ${new Date(booking.duration_end).toLocaleDateString('de-DE')}`}>
+                        <div>{new Date(booking.duration_start).toLocaleDateString('de-DE')}</div>
+                        <div className="text-gray-500 dark:text-gray-400">bis</div>
+                        <div>{new Date(booking.duration_end).toLocaleDateString('de-DE')}</div>
+                      </div>
+                    ) : (
+                      <div className="text-gray-400 dark:text-gray-500">-</div>
+                    )}
                   </td>
                   <td className="px-1 py-4 text-center" style={{width: '8%'}}>
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium truncate ${
