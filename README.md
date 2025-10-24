@@ -1,786 +1,1533 @@
-# Köln Branchen Portal - Vollständige Dokumentation
+# Sonderplatzierung Online – Vollständige Dokumentation
 
-**Version 2.0 - Enterprise Edition**
+# Sonderplatzierung Online – Vollständige Dokumentation
+
+**Version 2025 – Greven Group**
+
+**Version 2025 – Greven Group**
+
+---
 
 ---
 
 ## 🌟 Projektübersicht & Vision
 
-Das **Köln Branchen Portal** ist eine hochentwickelte Full-Stack-Webanwendung, die als zentrales Nervensystem für die Verwaltung von Werbeplatzierungen auf dem reichweitenstarken Portal `koeln.de` dient. Ursprünglich als einfaches Buchungstool konzipiert, hat sich das System zu einer umfassenden Enterprise-Lösung mit rollenbasiertem Zugriff, detaillierter Verfügbarkeitsprüfung und einem robusten, sicheren Backend entwickelt.
+## 🌟 Projektübersicht
 
-Die Vision hinter diesem Projekt ist es, den gesamten Lebenszyklus einer Werbebuchung – von der ersten Anfrage über die Reservierung bis hin zur festen Buchung und Abrechnung – digital, effizient und fehlerfrei abzubilden. Das System eliminiert manuelle Fehlerquellen, bietet Echtzeit-Einblicke in die Auslastung und schafft eine transparente, datengesteuerte Grundlage für strategische Entscheidungen im Vertrieb und Marketing.
+**Sonderplatzierung Online** ist eine hochmoderne Full-Stack-Webanwendung zur Verwaltung und Buchung von Sonderplatzierungen auf den digitalen Plattformen der Greven Group. Das System digitalisiert den gesamten Buchungsprozess – von der ersten Anfrage über die Reservierung bis zur finalen Buchung – und bietet dabei maximale Transparenz, Effizienz und Sicherheit.
+
+**Sonderplatzierung Online** ist eine moderne Full-Stack-Webanwendung zur Verwaltung und Buchung von Sonderplatzierungen auf den digitalen Plattformen der Greven Group. Das System digitalisiert den gesamten Buchungsprozess, bietet eine rollenbasierte Rechteverwaltung und sorgt für maximale Transparenz und Effizienz im Vertrieb.
+
+Die Vision hinter diesem Projekt ist es, den kompletten Lebenszyklus einer Werbebuchung digital, effizient und fehlerfrei abzubilden. Das System eliminiert manuelle Fehlerquellen, bietet Echtzeit-Einblicke in die Auslastung und schafft eine transparente, datengesteuerte Grundlage für strategische Entscheidungen im Vertrieb und Marketing.
 
 ---
+
+---
+
+## ✨ Hauptfunktionen
 
 ## ✨ Kernfunktionen im Detail
 
-Das System bietet eine breite Palette an Funktionen, die auf die spezifischen Bedürfnisse von Vertriebsmitarbeitern, Managern und Administratoren zugeschnitten sind.
+- **Rollenbasierte Anmeldung (RBAC):** Admins und Viewer mit klaren Berechtigungen
 
-### 🔐 Authentifizierung & Autorisierung (RBAC)
+### 🔐 Authentifizierung & Autorisierung (RBAC)- **Buchungsverwaltung:** Erstellen, Bearbeiten, Löschen und Filtern von Buchungen
 
-Das Herzstück der Version 2.0 ist ein robustes, rollenbasiertes Zugriffskontrollsystem (RBAC), das sicherstellt, dass Benutzer nur die Aktionen durchführen können, für die sie autorisiert sind.
+- **Kampagnen- und Laufzeitlogik:** Flexible Auswahl von Kampagnen oder individuellen Laufzeiten
 
-- **Zwei Benutzerrollen**:
-  - 👑 **Admin**: Uneingeschränkter Zugriff. Kann Buchungen erstellen, bearbeiten, löschen und Benutzer verwalten.
-  - 👁️ **Viewer**: Schreibgeschützter Zugriff. Kann die Buchungsübersicht und die Verfügbarkeitsprüfung einsehen, aber keine Daten verändern.
-- **Sicherer Login**: Benutzername- und Passwort-Authentifizierung mit **bcrypt-Hashing** (12 Salt-Runden) zur sicheren Speicherung der Passwörter.
-- **JWT-basierte Sessions**: Verwendung von JSON Web Tokens (JWT) für die Sitzungsverwaltung, die in HTTP-only-Cookies gespeichert werden, um XSS-Angriffe zu verhindern.
-- **Persistente Anmeldung**: Benutzer bleiben auch nach dem Schließen des Browsers angemeldet, was den Arbeitsfluss verbessert.
-- **Automatische Abmeldung**: Tokens haben eine definierte Gültigkeitsdauer (24 Stunden) und das Frontend leitet bei Ablauf automatisch zur Login-Seite weiter.
+Ein robustes, rollenbasiertes Zugriffskontrollsystem (RBAC) stellt sicher, dass Benutzer nur die Aktionen durchführen können, für die sie autorisiert sind.- **Cascading Dropdowns:** Plattform, Artikel-Typ und Produkt sind dynamisch verknüpft
+
+- **Echtzeit-Verfügbarkeitsprüfung:** Verhindert Doppelbuchungen und zeigt freie Plätze
+
+- **Zwei Benutzerrollen**:- **Dark Mode & Responsive UI:** Optimiert für Desktop und Mobile
+
+  - 👑 **Admin**: Uneingeschränkter Zugriff. Kann Buchungen erstellen, bearbeiten, löschen und Stammdaten verwalten.- **Sicheres Backend:** JWT, bcrypt, CORS, Rate Limiting, Validierung
+
+  - 👁️ **Viewer**: Schreibgeschützter Zugriff. Kann Buchungen einsehen, aber keine Daten verändern.
+
+- **Sicherer Login**: Benutzername- und Passwort-Authentifizierung mit **bcrypt-Hashing** (12 Salt-Runden).Ein entscheidendes Werkzeug zur Vermeidung von Doppelbuchungen und zur schnellen Beantwortung von Kundenanfragen.
+
+- **JWT-basierte Sessions**: JSON Web Tokens (JWT) in HTTP-only-Cookies zur Verhinderung von XSS-Angriffen.
+
+- **Persistente Anmeldung**: Benutzer bleiben angemeldet, auch nach dem Schließen des Browsers.- **Konfliktverhinderung**: Das System prüft bei jeder neuen Buchung oder Bearbeitung in Echtzeit, ob die gewünschte Platzierung im angegebenen Zeitraum verfügbar ist.
+
+- **Automatische Abmeldung**: Token-Gültigkeitsdauer von 24 Stunden mit automatischer Weiterleitung zum Login.- **Detaillierte Prüfung**: Die Verfügbarkeitsprüfung kann für spezifische Zeiträume, Branchen und Platzierungen durchgeführt werden.
+
+- **Schnellauswahl**: Vordefinierte Zeiträume (z.B. "Nächste 30 Tage") ermöglichen eine schnelle Prüfung gängiger Anfragen.
 
 ### 📅 Umfassende Buchungsverwaltung (CRUD)
 
-Ein leistungsstarkes Modul zur Verwaltung des gesamten Buchungslebenszyklus.
-
-- **Buchungen erstellen**: Admins können neue Buchungen mit allen relevanten Details (Kunde, Zeitraum, Platzierung, etc.) anlegen.
-- **Buchungen bearbeiten**: Bestehende Buchungen können jederzeit aktualisiert werden, z.B. um einen Status von `reserviert` auf `gebucht` zu ändern oder einen Verkaufspreis hinzuzufügen.
-- **Buchungen löschen**: Nicht mehr benötigte Buchungen können von Admins entfernt werden.
-- **Detaillierte Filterung**: Die Buchungsübersicht kann nach allen relevanten Kriterien durchsucht und gefiltert werden, um schnell die gewünschten Informationen zu finden.
-
-### 🔍 Echtzeit-Verfügbarkeitsprüfung
-
-Ein entscheidendes Werkzeug zur Vermeidung von Doppelbuchungen und zur schnellen Beantwortung von Kundenanfragen.
-
-- **Konfliktverhinderung**: Das System prüft bei jeder neuen Buchung oder Bearbeitung in Echtzeit, ob die gewünschte Platzierung im angegebenen Zeitraum verfügbar ist.
-- **Detaillierte Prüfung**: Die Verfügbarkeitsprüfung kann für spezifische Zeiträume, Branchen und Platzierungen durchgeführt werden.
-- **Schnellauswahl**: Vordefinierte Zeiträume (z.B. "Nächste 30 Tage") ermöglichen eine schnelle Prüfung gängiger Anfragen.
-
 ### 🎨 Corporate Design & UI/UX
+
+Leistungsstarkes Modul zur Verwaltung des gesamten Buchungslebenszyklus.
 
 Die Benutzeroberfläche wurde mit einem starken Fokus auf Benutzerfreundlichkeit und die Einhaltung des Kölner Corporate Designs entwickelt.
 
-- **Köln-Farbpalette**: Verwendung der offiziellen Farben (Rot, Grau, etc.) für ein konsistentes Markenerlebnis.
-- **Responsive Design**: Die Anwendung ist vollständig für die Nutzung auf Desktops, Tablets und Smartphones optimiert.
-- **Intuitive Komponenten**: Verwendung von professionellen UI-Komponenten (DatePicker, Modals, etc.) für eine reibungslose Benutzererfahrung.
-- **Visuelles Feedback**: Klare Lade-Indikatoren, Erfolgs- und Fehlermeldungen geben dem Benutzer jederzeit Rückmeldung über den Systemstatus.
+- **Buchungen erstellen**: Admins können neue Buchungen mit allen relevanten Details anlegen.
 
----
+- **Buchungen bearbeiten**: Bestehende Buchungen können jederzeit aktualisiert werden (Status, Verkaufspreis, etc.).- **Köln-Farbpalette**: Verwendung der offiziellen Farben (Rot, Grau, etc.) für ein konsistentes Markenerlebnis.
 
-## 🏗️ Architektur & Technologie-Stack
+- **Buchungen löschen**: Nicht mehr benötigte Buchungen können von Admins entfernt werden.- **Responsive Design**: Die Anwendung ist vollständig für die Nutzung auf Desktops, Tablets und Smartphones optimiert.
 
-Das System ist als moderne **Full-Stack-Anwendung** mit einer klaren Trennung zwischen Frontend und Backend konzipiert, was eine hohe Skalierbarkeit, Wartbarkeit und Sicherheit gewährleistet.
+- **Detaillierte Filterung**: Suche und Filter nach Kunde, Plattform, Branche, Status, Berater und mehr.- **Intuitive Komponenten**: Verwendung von professionellen UI-Komponenten (DatePicker, Modals, etc.) für eine reibungslose Benutzererfahrung.
 
-### **Frontend (Client)**
+- **Moderne Bearbeitungs-Modals**: Cascading Dropdowns für Plattform → Artikel-Typ → Produkt mit automatischer Vorbefüllung.- **Visuelles Feedback**: Klare Lade-Indikatoren, Erfolgs- und Fehlermeldungen geben dem Benutzer jederzeit Rückmeldung über den Systemstatus.
+
+
+
+### 🎯 Kampagnen- und Laufzeitlogik---
+
+
+
+Flexible Buchungslogik für unterschiedliche Anforderungen.## 🏗️ Architektur & Technologie-Stack
+
+
+
+- **Kampagnenbasierte Buchungen**: Auswahl vordefinierter Kampagnen (z.B. "Weihnachten 2025").Das System ist als moderne **Full-Stack-Anwendung** mit einer klaren Trennung zwischen Frontend und Backend konzipiert, was eine hohe Skalierbarkeit, Wartbarkeit und Sicherheit gewährleistet.
+
+- **Laufzeitbasierte Buchungen**: Individuelle Start- und Enddaten für flexible Zeiträume.
+
+- **Automatische Erkennung**: System erkennt anhand des Artikel-Typs, welcher Modus verwendet wird.### **Frontend (Client)**
+
+- **Nahtloser Wechsel**: Benutzer können zwischen Modi wechseln, wenn der Artikel-Typ geändert wird.
 
 - **Framework**: **React 18** mit Vite als ultraschnellem Build-Tool.
-- **Styling**: **Tailwind CSS** für ein Utility-First-CSS-Framework, das schnelle und konsistente Designs ermöglicht.
+
+### 🔗 Cascading Dropdowns & Dynamische UI- **Styling**: **Tailwind CSS** für ein Utility-First-CSS-Framework, das schnelle und konsistente Designs ermöglicht.
+
 - **UI-Komponenten**: **shadcn/ui** und **Lucide Icons** für eine professionelle und ästhetisch ansprechende Benutzeroberfläche.
-- **State Management**: **React Context API** für die globale Zustandsverwaltung, insbesondere für die Authentifizierung (`AuthContext`).
+
+Intelligente Formularlogik für eine intuitive Benutzererfahrung.- **State Management**: **React Context API** für die globale Zustandsverwaltung, insbesondere für die Authentifizierung (`AuthContext`).
+
 - **Routing**: **React Router** für die Navigation und die Implementierung von geschützten Routen (`ProtectedRoute`).
 
-### **Backend (Server)**
+- **Plattform-Auswahl**: Filtert verfügbare Artikel-Typen basierend auf der gewählten Plattform.
 
-- **Framework**: **Node.js** mit **Express.js** für eine robuste und performante API.
+- **Artikel-Typ-Auswahl**: Lädt zugehörige Produkte und bestimmt, ob Kampagnen oder Laufzeiten verwendet werden.### **Backend (Server)**
+
+- **Produkt-Auswahl**: Zeigt nur relevante Produkte basierend auf Artikel-Typ.
+
+- **Automatische Vorbefüllung**: Beim Bearbeiten werden alle Felder automatisch mit den bestehenden Werten gefüllt.- **Framework**: **Node.js** mit **Express.js** für eine robuste und performante API.
+
 - **Datenbank**: **PostgreSQL**, eine leistungsstarke und zuverlässige relationale Datenbank.
-- **Sicherheit**: 
+
+### 🔍 Echtzeit-Verfügbarkeitsprüfung- **Sicherheit**: 
+
   - **bcrypt**: Zum Hashen von Passwörtern.
-  - **jsonwebtoken (JWT)**: Für die Erstellung und Verifizierung von Session-Tokens.
+
+Verhindert Doppelbuchungen und zeigt freie Kapazitäten.  - **jsonwebtoken (JWT)**: Für die Erstellung und Verifizierung von Session-Tokens.
+
   - **Helmet**: Zum Schutz vor gängigen Web-Schwachstellen durch Setzen von sicheren HTTP-Headern.
-  - **express-rate-limit**: Zum Schutz vor Brute-Force- und Denial-of-Service-Angriffen.
-  - **CORS**: Zur sicheren Steuerung von Cross-Origin-Anfragen.
-- **Validierung**: **Joi** für die serverseitige Validierung aller eingehenden Daten, um die Datenintegrität zu gewährleisten.
+
+- **Konfliktprüfung**: Automatische Überprüfung bei jeder Buchung oder Bearbeitung.  - **express-rate-limit**: Zum Schutz vor Brute-Force- und Denial-of-Service-Angriffen.
+
+- **Detaillierte Prüfung**: Filterung nach Zeitraum, Branche, Plattform und Produkt.  - **CORS**: Zur sicheren Steuerung von Cross-Origin-Anfragen.
+
+- **Schnellauswahl**: Vordefinierte Zeiträume (z.B. "Nächste 30 Tage", "Nächstes Quartal").- **Validierung**: **Joi** für die serverseitige Validierung aller eingehenden Daten, um die Datenintegrität zu gewährleisten.
+
+- **Visuelle Darstellung**: Übersichtliche Anzeige verfügbarer und belegter Plätze.
 
 ### **Deployment & Infrastruktur (DevOps)**
 
-- **Hosting-Plattform**: **Render.com** für eine nahtlose und skalierbare Bereitstellung von Frontend, Backend und Datenbank.
-- **Continuous Integration/Continuous Deployment (CI/CD)**: Vollautomatische Deployments bei jedem Push auf den `main`-Branch des GitHub-Repositorys.
-- **Infrastruktur als Code (IaC)**: Eine `render.yaml`-Datei definiert die gesamte Infrastruktur, was eine schnelle und reproduzierbare Einrichtung ermöglicht.
-- **Verwaltete Datenbank**: Nutzung des verwalteten PostgreSQL-Dienstes von Render.com, inklusive automatischer Backups und Skalierung.
+### 🎨 Modernes UI/UX Design
 
----
+- **Hosting-Plattform**: **Render.com** für eine nahtlose und skalierbare Bereitstellung von Frontend, Backend und Datenbank.
+
+Professionelle Benutzeroberfläche mit Fokus auf Benutzerfreundlichkeit.- **Continuous Integration/Continuous Deployment (CI/CD)**: Vollautomatische Deployments bei jedem Push auf den `main`-Branch des GitHub-Repositorys.
+
+- **Infrastruktur als Code (IaC)**: Eine `render.yaml`-Datei definiert die gesamte Infrastruktur, was eine schnelle und reproduzierbare Einrichtung ermöglicht.
+
+- **Dark Mode**: Vollständig implementierter Dunkelmodus für angenehmes Arbeiten.- **Verwaltete Datenbank**: Nutzung des verwalteten PostgreSQL-Dienstes von Render.com, inklusive automatischer Backups und Skalierung.
+
+- **Responsive Design**: Optimiert für Desktop, Tablet und Smartphone.
+
+- **Greven Corporate Design**: Verwendung der offiziellen Farben und Designsprache.---
+
+- **Intuitive Komponenten**: DatePicker, Modals, Dropdowns mit modernem Look & Feel.
+
+- **Visuelles Feedback**: Lade-Indikatoren, Erfolgs- und Fehlermeldungen, Hover-Effekte.## 🛠️ Setup & Lokale Entwicklung
+
+
+
+---Folgen Sie diesen Schritten, um das Projekt lokal aufzusetzen.
+
+
+
+## 🏗️ Architektur & Technologie-Stack### **Voraussetzungen**
+
+
+
+Das System ist als moderne **Full-Stack-Anwendung** mit klarer Trennung zwischen Frontend und Backend konzipiert.- Node.js v18 oder höher
+
+- npm oder pnpm
+
+### **Frontend (Client)**- PostgreSQL v12 oder höher
+
+- Git
+
+- **Framework**: **React 18** mit **Vite** als Build-Tool
+
+- **Styling**: **Tailwind CSS** für Utility-First-Styling### **1. Repository klonen**
+
+- **UI-Komponenten**: **shadcn/ui** und **Lucide Icons**
+
+- **State Management**: **React Context API** (`AuthContext`)```bash
+
+- **Routing**: **React Router** mit geschützten Routen (`ProtectedRoute`)git clone https://github.com/KIGREVEN/koelnbranchende.git
+
+- **Formular-Handling**: Native React State mit Validierungcd koelnbranchende
+
+- **HTTP-Client**: Native `fetch` mit Authentifizierungs-Wrapper```
+
+
+
+### **Backend (Server)**### **2. Backend einrichten**
+
+
+
+- **Runtime**: **Node.js** v18+```bash
+
+- **Framework**: **Express.js**cd server
+
+- **Datenbank**: **PostgreSQL** v12+npm install
+
+- **Authentifizierung**: 
+
+  - **bcrypt**: Passwort-Hashing# Erstellen Sie eine .env Datei basierend auf .env.example
+
+  - **jsonwebtoken (JWT)**: Session-Managementcp .env.example .env
+
+- **Sicherheit**:```
+
+  - **Helmet**: HTTP-Header-Schutz
+
+  - **express-rate-limit**: Brute-Force-SchutzPassen Sie die `.env`-Datei mit Ihren lokalen PostgreSQL-Datenbankdaten an.
+
+  - **CORS**: Cross-Origin-Request-Kontrolle
+
+- **Validierung**: **Joi** für serverseitige Datenvalidierung### **3. Frontend einrichten**
+
+- **Logging**: **Morgan** für HTTP-Request-Logging
+
+```bash
+
+### **Deployment & Infrastruktur**cd ../client
+
+npm install
+
+- **Server**: Linux-Server (extweb04, IP: 217.110.253.198)```
+
+- **Reverse Proxy**: **Nginx**
+
+- **Prozessmanagement**: **pm2** (Ecosystem-Konfiguration)### **4. Datenbank migrieren**
+
+- **SSL/TLS**: **Let's Encrypt** Zertifikat
+
+- **Domain**: sonderplatzierung.greven.deFühren Sie die Migrationen aus, um die notwendigen Tabellen in Ihrer Datenbank zu erstellen.
+
+- **Ports**: 
+
+  - Backend: 3101```bash
+
+  - Frontend: Über Nginx (Port 80/443)cd ../server
+
+# Führt die SQL-Skripte im migrations-Ordner aus
+
+---node migrate.js
+
+```
 
 ## 🛠️ Setup & Lokale Entwicklung
 
-Folgen Sie diesen Schritten, um das Projekt lokal aufzusetzen.
+### **5. Anwendung starten**
 
 ### **Voraussetzungen**
 
+Öffnen Sie zwei Terminals:
+
 - Node.js v18 oder höher
-- npm oder pnpm
-- PostgreSQL v12 oder höher
-- Git
 
-### **1. Repository klonen**
+- npm oder pnpm**Terminal 1 (Backend):**
 
-```bash
-git clone https://github.com/KIGREVEN/koelnbranchende.git
-cd koelnbranchende
+- PostgreSQL v12 oder höher```bash
+
+- Gitcd server
+
+npm run dev
+
+### **1. Repository klonen**```
+
+
+
+```bash**Terminal 2 (Frontend):**
+
+git clone https://github.com/KIGREVEN/Sonderplatzierungonline.git```bash
+
+cd Sonderplatzierungonlinecd client
+
+```npm run dev
+
 ```
 
 ### **2. Backend einrichten**
 
-```bash
-cd server
-npm install
-
-# Erstellen Sie eine .env Datei basierend auf .env.example
-cp .env.example .env
-```
-
-Passen Sie die `.env`-Datei mit Ihren lokalen PostgreSQL-Datenbankdaten an.
-
-### **3. Frontend einrichten**
-
-```bash
-cd ../client
-npm install
-```
-
-### **4. Datenbank migrieren**
-
-Führen Sie die Migrationen aus, um die notwendigen Tabellen in Ihrer Datenbank zu erstellen.
-
-```bash
-cd ../server
-# Führt die SQL-Skripte im migrations-Ordner aus
-node migrate.js
-```
-
-### **5. Anwendung starten**
-
-Öffnen Sie zwei Terminals:
-
-**Terminal 1 (Backend):**
-```bash
-cd server
-npm run dev
-```
-
-**Terminal 2 (Frontend):**
-```bash
-cd client
-npm run dev
-```
-
 Die Anwendung ist nun unter `http://localhost:5173` verfügbar.
 
----
+```bash
+
+cd server---
+
+npm install
 
 ##  Arbeitszeit & Kostenanalyse
 
-Eine realistische Schätzung des Aufwands und der Kosten, wenn dieses Projekt von einem einzelnen Fullstack-Entwickler von Grund auf neu entwickelt oder extern beauftragt worden wäre. Diese Schätzung basiert auf aktuellen Branchenstandards für Konzeption, Entwicklung, Testing und Deployment.
+# .env-Datei erstellen und anpassen
+
+cp .env.example .envEine realistische Schätzung des Aufwands und der Kosten, wenn dieses Projekt von einem einzelnen Fullstack-Entwickler von Grund auf neu entwickelt oder extern beauftragt worden wäre. Diese Schätzung basiert auf aktuellen Branchenstandards für Konzeption, Entwicklung, Testing und Deployment.
+
+```
 
 ### **📊 Arbeitszeit-Aufschlüsselung**
 
-| Phase | Aufgaben | Geschätzte Arbeitszeit (Stunden) |
-| :--- | :--- | :--- |
-| **1. Konzeption & Architektur** | Anforderungsanalyse, Technologie-Auswahl, Datenbank-Design, Architektur-Planung | **16 - 24 Stunden** |
-| **2. Backend-Entwicklung** | API-Endpunkte (CRUD, Auth, Availability), Datenbank-Integration, Middleware, Sicherheit | **40 - 60 Stunden** |
-| **3. Frontend-Entwicklung** | Komponenten (Login, Dashboard, Forms, Modals), State Management, API-Integration, UI/UX | **60 - 80 Stunden** |
-| **4. Testing & Qualitätssicherung** | Unit-Tests, Integrationstests, End-to-End-Tests, Manuelles Testing, Bug-Fixing | **24 - 40 Stunden** |
+Beispiel `.env`:
+
+```env| Phase | Aufgaben | Geschätzte Arbeitszeit (Stunden) |
+
+DATABASE_URL=postgresql://user:password@localhost:5432/sonderplatzierung| :--- | :--- | :--- |
+
+JWT_SECRET=your-secret-key-here| **1. Konzeption & Architektur** | Anforderungsanalyse, Technologie-Auswahl, Datenbank-Design, Architektur-Planung | **16 - 24 Stunden** |
+
+NODE_ENV=development| **2. Backend-Entwicklung** | API-Endpunkte (CRUD, Auth, Availability), Datenbank-Integration, Middleware, Sicherheit | **40 - 60 Stunden** |
+
+PORT=3101| **3. Frontend-Entwicklung** | Komponenten (Login, Dashboard, Forms, Modals), State Management, API-Integration, UI/UX | **60 - 80 Stunden** |
+
+```| **4. Testing & Qualitätssicherung** | Unit-Tests, Integrationstests, End-to-End-Tests, Manuelles Testing, Bug-Fixing | **24 - 40 Stunden** |
+
 | **5. Deployment & DevOps** | CI/CD-Pipeline einrichten, Hosting konfigurieren, Monitoring, Dokumentation | **16 - 32 Stunden** |
-| **Gesamtaufwand** | | **156 - 236 Stunden** |
 
-### **💰 Kostenanalyse - Interne Entwicklung**
+### **3. Frontend einrichten**| **Gesamtaufwand** | | **156 - 236 Stunden** |
 
-**Annahmen für interne Entwicklungskosten:**
-- Senior Fullstack-Entwickler: €80-120/Stunde (Deutschland, 2024)
+
+
+```bash### **💰 Kostenanalyse - Interne Entwicklung**
+
+cd ../client
+
+npm install**Annahmen für interne Entwicklungskosten:**
+
+```- Senior Fullstack-Entwickler: €80-120/Stunde (Deutschland, 2024)
+
 - Durchschnittlicher Stundensatz: €100/Stunde
-- Zusätzliche Personalkosten (Sozialversicherung, Büro, Equipment): +40%
+
+### **4. Datenbank migrieren**- Zusätzliche Personalkosten (Sozialversicherung, Büro, Equipment): +40%
+
 - Effektiver Stundensatz: €140/Stunde
 
-| Szenario | Arbeitszeit | Entwicklerkosten | Zusatzkosten (40%) | **Gesamtkosten** |
-| :--- | :--- | :--- | :--- | :--- |
-| **Minimum** | 156 Stunden | €15.600 | €6.240 | **€21.840** |
+```bash
+
+cd ../server| Szenario | Arbeitszeit | Entwicklerkosten | Zusatzkosten (40%) | **Gesamtkosten** |
+
+node migrate.js| :--- | :--- | :--- | :--- | :--- |
+
+```| **Minimum** | 156 Stunden | €15.600 | €6.240 | **€21.840** |
+
 | **Durchschnitt** | 196 Stunden | €19.600 | €7.840 | **€27.440** |
-| **Maximum** | 236 Stunden | €23.600 | €9.440 | **€33.040** |
 
-### **🏢 Kostenanalyse - Externe Beauftragung**
+Dies führt alle SQL-Migrationsskripte im `migrations/`-Ordner aus und erstellt die notwendigen Tabellen:| **Maximum** | 236 Stunden | €23.600 | €9.440 | **€33.040** |
 
-**Annahmen für externe Entwicklungskosten:**
+- `platforms` – Plattformen (koeln.de, essen.de, etc.)
 
-#### **Deutsche Entwicklungsagentur (Premium)**
-- Stundensatz: €120-180/Stunde
-- Projektmanagement-Aufschlag: +25%
-- Risiko- und Gewinnmarge: +30%
+- `article_types` – Artikel-Typen mit Kampagnen-/Laufzeit-Logik### **🏢 Kostenanalyse - Externe Beauftragung**
+
+- `products` – Produkte/Artikel
+
+- `categories` – Branchen/Kategorien**Annahmen für externe Entwicklungskosten:**
+
+- `locations` – Orte
+
+- `campaigns` – Kampagnen#### **Deutsche Entwicklungsagentur (Premium)**
+
+- `bookings` – Buchungen- Stundensatz: €120-180/Stunde
+
+- `users` – Benutzer- Projektmanagement-Aufschlag: +25%
+
+- Verknüpfungstabellen und Indizes- Risiko- und Gewinnmarge: +30%
+
 - Durchschnittlicher Projektsatz: €200/Stunde
 
+### **5. Anwendung starten**
+
 | Szenario | Arbeitszeit | Agenturkosten | PM-Aufschlag (25%) | Marge (30%) | **Gesamtkosten** |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Minimum** | 156 Stunden | €31.200 | €7.800 | €11.700 | **€50.700** |
-| **Durchschnitt** | 196 Stunden | €39.200 | €9.800 | €14.700 | **€63.700** |
-| **Maximum** | 236 Stunden | €47.200 | €11.800 | €17.700 | **€76.700** |
 
-#### **Internationale Agentur (Mittelklasse)**
-- Stundensatz: €80-120/Stunde
+#### **Backend (Terminal 1):**| :--- | :--- | :--- | :--- | :--- | :--- |
+
+```bash| **Minimum** | 156 Stunden | €31.200 | €7.800 | €11.700 | **€50.700** |
+
+cd server| **Durchschnitt** | 196 Stunden | €39.200 | €9.800 | €14.700 | **€63.700** |
+
+npm run dev| **Maximum** | 236 Stunden | €47.200 | €11.800 | €17.700 | **€76.700** |
+
+# oder für Produktion:
+
+node index.js#### **Internationale Agentur (Mittelklasse)**
+
+```- Stundensatz: €80-120/Stunde
+
 - Projektmanagement-Aufschlag: +20%
-- Risiko- und Gewinnmarge: +25%
-- Durchschnittlicher Projektsatz: €130/Stunde
 
-| Szenario | Arbeitszeit | Agenturkosten | PM-Aufschlag (20%) | Marge (25%) | **Gesamtkosten** |
-| :--- | :--- | :--- | :--- | :--- | :--- |
+#### **Frontend (Terminal 2):**- Risiko- und Gewinnmarge: +25%
+
+```bash- Durchschnittlicher Projektsatz: €130/Stunde
+
+cd client
+
+npm run dev| Szenario | Arbeitszeit | Agenturkosten | PM-Aufschlag (20%) | Marge (25%) | **Gesamtkosten** |
+
+```| :--- | :--- | :--- | :--- | :--- | :--- |
+
 | **Minimum** | 156 Stunden | €20.280 | €4.056 | €6.084 | **€30.420** |
-| **Durchschnitt** | 196 Stunden | €25.480 | €5.096 | €7.644 | **€38.220** |
+
+Die Anwendung ist nun unter `http://localhost:5173` verfügbar.| **Durchschnitt** | 196 Stunden | €25.480 | €5.096 | €7.644 | **€38.220** |
+
 | **Maximum** | 236 Stunden | €30.680 | €6.136 | €9.204 | **€46.020** |
 
-#### **Offshore-Entwicklung (Budget)**
-- Stundensatz: €25-50/Stunde
-- Kommunikations-Aufschlag: +30%
-- Qualitätssicherungs-Aufschlag: +40%
-- Projektmanagement-Aufschlag: +25%
-- Durchschnittlicher Projektsatz: €75/Stunde
-
-| Szenario | Arbeitszeit | Entwicklungskosten | Kommunikation (30%) | QS (40%) | PM (25%) | **Gesamtkosten** |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Minimum** | 156 Stunden | €5.850 | €1.755 | €2.340 | €1.463 | **€11.408** |
-| **Durchschnitt** | 196 Stunden | €7.350 | €2.205 | €2.940 | €1.838 | **€14.333** |
-| **Maximum** | 236 Stunden | €8.850 | €2.655 | €3.540 | €2.213 | **€17.258** |
-
-### **📈 Kostenvergleich - Übersicht**
-
-| Entwicklungsansatz | Minimum | Durchschnitt | Maximum | **Durchschnitt** |
-| :--- | :--- | :--- | :--- | :--- |
-| **Interne Entwicklung** | €21.840 | €27.440 | €33.040 | **€27.440** |
-| **Deutsche Premium-Agentur** | €50.700 | €63.700 | €76.700 | **€63.700** |
-| **Internationale Agentur** | €30.420 | €38.220 | €46.020 | **€38.220** |
-| **Offshore-Entwicklung** | €11.408 | €14.333 | €17.258 | **€14.333** |
-
-### **💡 Zusätzliche Kostenfaktoren**
-
-#### **Versteckte Kosten bei externer Entwicklung:**
-- **Einarbeitung & Briefing**: 10-20 Stunden (€1.000-4.000)
-- **Kommunikations-Overhead**: 15-25% der Projektzeit
-- **Qualitätssicherung & Abnahme**: 20-40 Stunden (€2.000-8.000)
-- **Nachbesserungen & Bugfixes**: 10-30% der ursprünglichen Entwicklungszeit
-- **Wissenstransfer & Dokumentation**: 15-25 Stunden (€1.500-5.000)
-
-**Ein einzelner Fullstack-Entwickler hätte für die Entwicklung dieses Projekts in dieser Qualität und mit diesem Funktionsumfang etwa 4 bis 6 Arbeitswochen benötigt. Die Kosten hätten zwischen €14.333 (Offshore) und €76.700 (Premium-Agentur) gelegen. Dies unterstreicht die enorme Effizienz und Kostenersparnis, die durch den Einsatz von KI-gestützten Entwicklungstools wie Manus erzielt wurde.**
-
-## ✍️ Autor
-
-Dieses Projekt wurde von **Tobias Leyendecker** entwickelt.
-
-
-## 📁 Detaillierte Projektstruktur
-
-Das Projekt folgt einer modernen, modularen Architektur mit klarer Trennung von Verantwortlichkeiten.
-
-```
-koelnbranchende/
-├── 📁 client/                          # React Frontend
-│   ├── 📁 public/                      # Statische Assets
-│   │   ├── 🖼️ KoelnBG_Logo_rgb.png    # Köln Branchen Guide Logo
-│   │   └── 📄 index.html               # HTML Template
-│   ├── 📁 src/                         # Quellcode
-│   │   ├── 📁 components/              # React Komponenten
-│   │   │   ├── 🔐 LoginForm.jsx        # Benutzeranmeldung
-│   │   │   ├── 🛡️ ProtectedRoute.jsx   # Route-Schutz
-│   │   │   ├── 👤 UserProfile.jsx      # Benutzerprofil & Logout
-│   │   │   ├── 📋 BookingOverview.jsx  # Buchungsübersicht mit Filtern
-│   │   │   ├── ✏️ BookingForm.jsx      # Neue Buchung erstellen
-│   │   │   ├── 🔧 EditBookingModal.jsx # Buchung bearbeiten
-│   │   │   ├── 🔍 AvailabilityChecker.jsx # Verfügbarkeitsprüfung
-│   │   │   └── 📅 DatePicker.jsx       # Datumsauswahl-Komponente
-│   │   ├── 📁 context/                 # React Context
-│   │   │   └── 🔐 AuthContext.jsx      # Globale Authentifizierung
-│   │   ├── 🎨 App.css                  # Globale Styles
-│   │   ├── ⚛️ App.jsx                  # Haupt-App-Komponente
-│   │   └── 🚀 main.jsx                 # React Entry Point
-│   ├── 📦 package.json                 # Frontend Dependencies
-│   ├── ⚡ vite.config.js               # Vite Build-Konfiguration
-│   └── 🎨 tailwind.config.js           # Tailwind CSS Konfiguration
-├── 📁 server/                          # Express.js Backend
-│   ├── 📁 config/                      # Konfigurationsdateien
-│   │   └── 🗄️ database.js             # PostgreSQL Verbindung
-│   ├── 📁 middleware/                  # Express Middleware
-│   │   └── 🔐 auth.js                  # JWT Authentifizierung
-│   ├── 📁 models/                      # Datenmodelle
-│   │   ├── 📋 Booking.js               # Buchungsmodell
-│   │   └── 👤 User.js                  # Benutzermodell
-│   ├── 📁 routes/                      # API-Endpunkte
-│   │   ├── 📋 bookings.js              # Buchungs-CRUD-Operationen
-│   │   ├── 🔍 availability.js          # Verfügbarkeitsprüfung
-│   │   ├── 🏷️ categories.js           # Branchenverwaltung
-│   │   ├── 🔐 auth.js                  # Authentifizierung
-│   │   └── 🔄 migrate.js               # Datenbank-Migrationen
-│   ├── 📁 migrations/                  # SQL-Migrationsskripte
-│   │   ├── 📋 create_bookings_table.sql
-│   │   ├── 🏷️ create_categories_table.sql
-│   │   ├── 👤 create_users_table.sql
-│   │   ├── 💰 add_verkaufspreis_to_bookings.sql
-│   │   └── 👤 insert_default_users.sql
-│   ├── 🚀 index.js                     # Express Server Entry Point
-│   ├── 🔄 migrate.js                   # Migration Runner
-│   └── 📦 package.json                 # Backend Dependencies
-├── 📁 upload/                          # Temporäre Upload-Dateien
-│   ├── 🖼️ image.png                   # Screenshots für Dokumentation
-│   └── 🖼️ KoelnBG_Logo_rgb.png       # Logo-Datei
-├── 🚀 render.yaml                      # Render.com Deployment-Konfiguration
-├── 📚 README.md                        # Diese Dokumentation
-├── 📝 *.md                             # Zusätzliche Dokumentationsdateien
-└── 🧪 test_*.py                        # Python-Testskripte für API-Tests
-```
-
-### **Architektur-Prinzipien**
-
-Das Projekt folgt bewährten Architektur-Prinzipien:
-
-1. **Separation of Concerns**: Frontend und Backend sind vollständig getrennt und kommunizieren ausschließlich über eine REST-API.
-2. **Component-Based Architecture**: Das Frontend ist in wiederverwendbare React-Komponenten unterteilt.
-3. **Layered Architecture**: Das Backend folgt einer geschichteten Architektur mit Routen, Middleware, Modellen und Datenbankschicht.
-4. **Security by Design**: Sicherheitsaspekte sind von Anfang an in die Architektur integriert.
-
 ---
+
+#### **Offshore-Entwicklung (Budget)**
+
+## 📁 Detaillierte Projektstruktur- Stundensatz: €25-50/Stunde
+
+- Kommunikations-Aufschlag: +30%
+
+```- Qualitätssicherungs-Aufschlag: +40%
+
+Sonderplatzierungonline/- Projektmanagement-Aufschlag: +25%
+
+├── 📁 client/                          # React Frontend- Durchschnittlicher Projektsatz: €75/Stunde
+
+│   ├── 📁 public/                      # Statische Assets
+
+│   ├── 📁 src/                         # Quellcode| Szenario | Arbeitszeit | Entwicklungskosten | Kommunikation (30%) | QS (40%) | PM (25%) | **Gesamtkosten** |
+
+│   │   ├── 📁 components/              # React Komponenten| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+
+│   │   │   ├── 🔐 LoginForm.jsx        # Benutzeranmeldung| **Minimum** | 156 Stunden | €5.850 | €1.755 | €2.340 | €1.463 | **€11.408** |
+
+│   │   │   ├── 🛡️ ProtectedRoute.jsx   # Route-Schutz| **Durchschnitt** | 196 Stunden | €7.350 | €2.205 | €2.940 | €1.838 | **€14.333** |
+
+│   │   │   ├── 👤 UserProfile.jsx      # Benutzerprofil & Logout| **Maximum** | 236 Stunden | €8.850 | €2.655 | €3.540 | €2.213 | **€17.258** |
+
+│   │   │   ├── 📋 BookingOverview.jsx  # Buchungsübersicht mit Filtern
+
+│   │   │   ├── ✏️ BookingForm.jsx      # Neue Buchung erstellen### **📈 Kostenvergleich - Übersicht**
+
+│   │   │   ├── 🔧 EditBookingModal.jsx # Buchung bearbeiten (Modern)
+
+│   │   │   ├── 🔍 AvailabilityChecker.jsx # Verfügbarkeitsprüfung| Entwicklungsansatz | Minimum | Durchschnitt | Maximum | **Durchschnitt** |
+
+│   │   │   └── 📅 DatePicker.jsx       # Datumsauswahl| :--- | :--- | :--- | :--- | :--- |
+
+│   │   ├── 📁 context/                 # React Context| **Interne Entwicklung** | €21.840 | €27.440 | €33.040 | **€27.440** |
+
+│   │   │   └── 🔐 AuthContext.jsx      # Globale Authentifizierung| **Deutsche Premium-Agentur** | €50.700 | €63.700 | €76.700 | **€63.700** |
+
+│   │   ├── 📁 hooks/                   # Custom Hooks| **Internationale Agentur** | €30.420 | €38.220 | €46.020 | **€38.220** |
+
+│   │   ├── 📁 lib/                     # Utility-Funktionen| **Offshore-Entwicklung** | €11.408 | €14.333 | €17.258 | **€14.333** |
+
+│   │   ├── 📁 styles/                  # CSS-Dateien
+
+│   │   ├── ⚛️ App.jsx                  # Haupt-App-Komponente### **💡 Zusätzliche Kostenfaktoren**
+
+│   │   └── 🚀 main.jsx                 # React Entry Point
+
+│   ├── 📦 package.json                 # Frontend Dependencies#### **Versteckte Kosten bei externer Entwicklung:**
+
+│   ├── ⚡ vite.config.js               # Vite Konfiguration- **Einarbeitung & Briefing**: 10-20 Stunden (€1.000-4.000)
+
+│   └── 🎨 tailwind.config.js           # Tailwind CSS Konfiguration- **Kommunikations-Overhead**: 15-25% der Projektzeit
+
+├── 📁 server/                          # Express.js Backend- **Qualitätssicherung & Abnahme**: 20-40 Stunden (€2.000-8.000)
+
+│   ├── 📁 config/                      # Konfigurationsdateien- **Nachbesserungen & Bugfixes**: 10-30% der ursprünglichen Entwicklungszeit
+
+│   │   └── 🗄️ database.js             # PostgreSQL Verbindung- **Wissenstransfer & Dokumentation**: 15-25 Stunden (€1.500-5.000)
+
+│   ├── 📁 middleware/                  # Express Middleware
+
+│   │   └── 🔐 auth.js                  # JWT Authentifizierung**Ein einzelner Fullstack-Entwickler hätte für die Entwicklung dieses Projekts in dieser Qualität und mit diesem Funktionsumfang etwa 4 bis 6 Arbeitswochen benötigt. Die Kosten hätten zwischen €14.333 (Offshore) und €76.700 (Premium-Agentur) gelegen. Dies unterstreicht die enorme Effizienz und Kostenersparnis, die durch den Einsatz von KI-gestützten Entwicklungstools wie Manus erzielt wurde.**
+
+│   ├── 📁 models/                      # Datenmodelle
+
+│   │   ├── 📋 Booking.js               # Buchungsmodell## ✍️ Autor
+
+│   │   ├── 🏢 Platform.js              # Plattformmodell
+
+│   │   ├── 📦 Product.js               # ProduktmodellDieses Projekt wurde von **Tobias Leyendecker** entwickelt.
+
+│   │   └── 👤 User.js                  # Benutzermodell
+
+│   ├── 📁 routes/                      # API-Endpunkte
+
+│   │   ├── 📋 bookings.js              # Buchungs-CRUD## 📁 Detaillierte Projektstruktur
+
+│   │   ├── 🔍 availability.js          # Verfügbarkeitsprüfung
+
+│   │   ├── 🏢 platforms.js             # Plattformen-APIDas Projekt folgt einer modernen, modularen Architektur mit klarer Trennung von Verantwortlichkeiten.
+
+│   │   ├── 📦 products.js              # Produkte-API
+
+│   │   ├── 🏷️ articleTypes.js         # Artikel-Typen-API```
+
+│   │   ├── 📂 categories.js            # Branchen-APIkoelnbranchende/
+
+│   │   ├── 📍 locations.js             # Orte-API├── 📁 client/                          # React Frontend
+
+│   │   ├── 🎯 campaigns.js             # Kampagnen-API│   ├── 📁 public/                      # Statische Assets
+
+│   │   ├── 🔐 auth.js                  # Authentifizierung│   │   ├── 🖼️ KoelnBG_Logo_rgb.png    # Köln Branchen Guide Logo
+
+│   │   └── 👥 users.js                 # Benutzerverwaltung│   │   └── 📄 index.html               # HTML Template
+
+│   ├── 📁 migrations/                  # SQL-Migrationsskripte│   ├── 📁 src/                         # Quellcode
+
+│   │   ├── 001_create_platforms.sql│   │   ├── 📁 components/              # React Komponenten
+
+│   │   ├── 002_create_article_types.sql│   │   │   ├── 🔐 LoginForm.jsx        # Benutzeranmeldung
+
+│   │   ├── 003_create_products.sql│   │   │   ├── 🛡️ ProtectedRoute.jsx   # Route-Schutz
+
+│   │   ├── 004_create_bookings.sql│   │   │   ├── 👤 UserProfile.jsx      # Benutzerprofil & Logout
+
+│   │   └── ...│   │   │   ├── 📋 BookingOverview.jsx  # Buchungsübersicht mit Filtern
+
+│   ├── 📁 scripts/                     # Hilfsskripte│   │   │   ├── ✏️ BookingForm.jsx      # Neue Buchung erstellen
+
+│   ├── 🚀 index.js                     # Express Server Entry Point│   │   │   ├── 🔧 EditBookingModal.jsx # Buchung bearbeiten
+
+│   ├── 🔄 migrate.js                   # Migration Runner│   │   │   ├── 🔍 AvailabilityChecker.jsx # Verfügbarkeitsprüfung
+
+│   ├── ⚙️ ecosystem.config.js          # pm2 Konfiguration│   │   │   └── 📅 DatePicker.jsx       # Datumsauswahl-Komponente
+
+│   └── 📦 package.json                 # Backend Dependencies│   │   ├── 📁 context/                 # React Context
+
+├── 📁 scripts/                         # Deployment & Hilfsskripte│   │   │   └── 🔐 AuthContext.jsx      # Globale Authentifizierung
+
+│   ├── deploy_production_domain.sh│   │   ├── 🎨 App.css                  # Globale Styles
+
+│   ├── fix_backend.sh│   │   ├── ⚛️ App.jsx                  # Haupt-App-Komponente
+
+│   └── 📁 docs/                        # Zusätzliche Dokumentation│   │   └── 🚀 main.jsx                 # React Entry Point
+
+├── 🌐 nginx-sonderplatzierung.conf     # Nginx vHost Konfiguration│   ├── 📦 package.json                 # Frontend Dependencies
+
+├── 🐳 docker-compose.yml               # Docker Setup (optional)│   ├── ⚡ vite.config.js               # Vite Build-Konfiguration
+
+├── 📚 README.md                        # Diese Dokumentation│   └── 🎨 tailwind.config.js           # Tailwind CSS Konfiguration
+
+└── 📝 *.md                             # Weitere Dokumentationsdateien├── 📁 server/                          # Express.js Backend
+
+```│   ├── 📁 config/                      # Konfigurationsdateien
+
+│   │   └── 🗄️ database.js             # PostgreSQL Verbindung
+
+---│   ├── 📁 middleware/                  # Express Middleware
+
+│   │   └── 🔐 auth.js                  # JWT Authentifizierung
+
+## 🔧 API-Dokumentation│   ├── 📁 models/                      # Datenmodelle
+
+│   │   ├── 📋 Booking.js               # Buchungsmodell
+
+Das Backend stellt eine umfassende REST-API zur Verfügung.│   │   └── 👤 User.js                  # Benutzermodell
+
+│   ├── 📁 routes/                      # API-Endpunkte
+
+### **Basis-URL**│   │   ├── 📋 bookings.js              # Buchungs-CRUD-Operationen
+
+```│   │   ├── 🔍 availability.js          # Verfügbarkeitsprüfung
+
+http://sonderplatzierung.greven.de/api/│   │   ├── 🏷️ categories.js           # Branchenverwaltung
+
+```│   │   ├── 🔐 auth.js                  # Authentifizierung
+
+│   │   └── 🔄 migrate.js               # Datenbank-Migrationen
+
+### **Authentifizierung**│   ├── 📁 migrations/                  # SQL-Migrationsskripte
+
+│   │   ├── 📋 create_bookings_table.sql
+
+Alle API-Endpunkte (außer `/auth/login`) erfordern eine gültige JWT-Authentifizierung via HTTP-only-Cookie oder `Authorization`-Header.│   │   ├── 🏷️ create_categories_table.sql
+
+│   │   ├── 👤 create_users_table.sql
+
+#### **POST /api/auth/login**│   │   ├── 💰 add_verkaufspreis_to_bookings.sql
+
+Login mit Benutzername und Passwort.│   │   └── 👤 insert_default_users.sql
+
+│   ├── 🚀 index.js                     # Express Server Entry Point
+
+**Request:**│   ├── 🔄 migrate.js                   # Migration Runner
+
+```json│   └── 📦 package.json                 # Backend Dependencies
+
+{├── 📁 upload/                          # Temporäre Upload-Dateien
+
+  "username": "admin",│   ├── 🖼️ image.png                   # Screenshots für Dokumentation
+
+  "password": "admin123"│   └── 🖼️ KoelnBG_Logo_rgb.png       # Logo-Datei
+
+}├── 🚀 render.yaml                      # Render.com Deployment-Konfiguration
+
+```├── 📚 README.md                        # Diese Dokumentation
+
+├── 📝 *.md                             # Zusätzliche Dokumentationsdateien
+
+**Response:**└── 🧪 test_*.py                        # Python-Testskripte für API-Tests
+
+```json```
+
+{
+
+  "success": true,### **Architektur-Prinzipien**
+
+  "data": {
+
+    "user": {Das Projekt folgt bewährten Architektur-Prinzipien:
+
+      "id": 1,
+
+      "username": "admin",1. **Separation of Concerns**: Frontend und Backend sind vollständig getrennt und kommunizieren ausschließlich über eine REST-API.
+
+      "role": "admin"2. **Component-Based Architecture**: Das Frontend ist in wiederverwendbare React-Komponenten unterteilt.
+
+    },3. **Layered Architecture**: Das Backend folgt einer geschichteten Architektur mit Routen, Middleware, Modellen und Datenbankschicht.
+
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."4. **Security by Design**: Sicherheitsaspekte sind von Anfang an in die Architektur integriert.
+
+  }
+
+}---
+
+```
 
 ## 🔧 API-Dokumentation
 
-Das Backend stellt eine umfassende REST-API zur Verfügung, die alle Funktionen des Systems abdeckt.
+#### **GET /api/auth/me**
 
-### **Basis-URL**
-```
+Informationen über den aktuell angemeldeten Benutzer.Das Backend stellt eine umfassende REST-API zur Verfügung, die alle Funktionen des Systems abdeckt.
+
+
+
+#### **POST /api/auth/logout**### **Basis-URL**
+
+Benutzer abmelden und Token invalidieren.```
+
 [http://217.110.253.198:3001]
-```
 
-### **Authentifizierung**
+---```
 
-Alle API-Endpunkte (außer `/auth/login`) erfordern eine gültige JWT-Authentifizierung. Das Token wird als HTTP-only-Cookie oder im `Authorization`-Header übertragen.
 
-**Login-Endpunkt:**
-```http
-POST /api/auth/login
-Content-Type: application/json
 
-{
-  "username": "admin",
-  "password": "admin123"
-}
-```
+### **Buchungs-Endpunkte**### **Authentifizierung**
 
-**Antwort:**
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": 1,
-      "username": "admin",
-      "role": "admin"
-    },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
 
-### **Buchungs-Endpunkte**
 
-#### **GET /api/bookings**
+#### **GET /api/bookings**Alle API-Endpunkte (außer `/auth/login`) erfordern eine gültige JWT-Authentifizierung. Das Token wird als HTTP-only-Cookie oder im `Authorization`-Header übertragen.
+
 Alle Buchungen abrufen mit optionalen Filtern.
 
-**Query-Parameter:**
-- `search` (string): Suche in Kundenname, Kundennummer oder Belegung
-- `belegung` (string): Filter nach Branche
-- `berater` (string): Filter nach Berater
-- `status` (string): Filter nach Status (`vorreserviert`, `reserviert`, `gebucht`)
-- `platzierung` (integer): Filter nach Platzierung (1-6)
-- `von_datum` (date): Filter nach Startdatum
+**Login-Endpunkt:**
+
+**Query-Parameter:**```http
+
+- `search` (string): Suche in Kundenname, KundennummerPOST /api/auth/login
+
+- `platform_id` (integer): Filter nach PlattformContent-Type: application/json
+
+- `category_id` (integer): Filter nach Branche
+
+- `status` (string): `vorreserviert`, `reserviert`, `gebucht`{
+
+- `berater` (string): Filter nach Berater  "username": "admin",
+
+  "password": "admin123"
+
+**Response:**}
+
+```json```
+
+{
+
+  "success": true,**Antwort:**
+
+  "data": [```json
+
+    {{
+
+      "id": 1,  "success": true,
+
+      "kundenname": "Musterfirma GmbH",  "data": {
+
+      "kundennummer": "K-12345",    "user": {
+
+      "platform_id": 1,      "id": 1,
+
+      "platform_name": "koeln.de",      "username": "admin",
+
+      "product_id": 52,      "role": "admin"
+
+      "product_name": "Banner Top",    },
+
+      "category_id": 3,    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+      "category_name": "Immobilien",  }
+
+      "location_id": 1,}
+
+      "location_name": "Köln",```
+
+      "campaign_id": 5,
+
+      "campaign_label": "Weihnachten 2025",### **Buchungs-Endpunkte**
+
+      "duration_start": null,
+
+      "duration_end": null,#### **GET /api/bookings**
+
+      "status": "gebucht",Alle Buchungen abrufen mit optionalen Filtern.
+
+      "berater": "Anna Schmidt",
+
+      "verkaufspreis": 1500.00,**Query-Parameter:**
+
+      "created_at": "2025-01-15T10:30:00.000Z",- `search` (string): Suche in Kundenname, Kundennummer oder Belegung
+
+      "updated_at": "2025-01-20T14:45:00.000Z"- `belegung` (string): Filter nach Branche
+
+    }- `berater` (string): Filter nach Berater
+
+  ]- `status` (string): Filter nach Status (`vorreserviert`, `reserviert`, `gebucht`)
+
+}- `platzierung` (integer): Filter nach Platzierung (1-6)
+
+```- `von_datum` (date): Filter nach Startdatum
+
 - `bis_datum` (date): Filter nach Enddatum
 
-**Beispiel-Anfrage:**
-```http
-GET /api/bookings?status=gebucht&platzierung=1
-Authorization: Bearer <jwt-token>
-```
-
-**Antwort:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "kundenname": "Musterfirma GmbH",
-      "kundennummer": "K-12345",
-      "belegung": "Kanalreinigung",
-      "zeitraum_von": "2024-07-01T00:00:00.000Z",
-      "zeitraum_bis": "2024-07-31T23:59:59.000Z",
-      "platzierung": 1,
-      "status": "gebucht",
-      "berater": "Anna Schmidt",
-      "verkaufspreis": 1500.00,
-      "created_at": "2024-06-15T10:30:00.000Z",
-      "updated_at": "2024-06-20T14:45:00.000Z"
-    }
-  ]
-}
-```
-
 #### **POST /api/bookings** (Admin only)
-Neue Buchung erstellen.
 
-**Request Body:**
-```json
-{
+Neue Buchung erstellen.**Beispiel-Anfrage:**
+
+```http
+
+**Request Body:**GET /api/bookings?status=gebucht&platzierung=1
+
+```jsonAuthorization: Bearer <jwt-token>
+
+{```
+
   "kundenname": "Neue Firma GmbH",
-  "kundennummer": "K-67890",
-  "belegung": "Immobilienmakler",
-  "zeitraum_von": "2024-08-01T00:00:00.000Z",
-  "zeitraum_bis": "2024-08-31T23:59:59.000Z",
-  "platzierung": 2,
-  "status": "reserviert",
-  "berater": "Max Mustermann",
-  "verkaufspreis": 2000.00
-}
+
+  "kundennummer": "K-67890",**Antwort:**
+
+  "platform_id": 1,```json
+
+  "product_id": 52,{
+
+  "category_id": 3,  "success": true,
+
+  "location_id": 1,  "data": [
+
+  "campaign_id": 5,    {
+
+  "status": "reserviert",      "id": 1,
+
+  "berater": "Max Mustermann",      "kundenname": "Musterfirma GmbH",
+
+  "verkaufspreis": 2000.00      "kundennummer": "K-12345",
+
+}      "belegung": "Kanalreinigung",
+
+```      "zeitraum_von": "2024-07-01T00:00:00.000Z",
+
+      "zeitraum_bis": "2024-07-31T23:59:59.000Z",
+
+#### **PUT /api/bookings/:id** (Admin only)      "platzierung": 1,
+
+Bestehende Buchung aktualisieren.      "status": "gebucht",
+
+      "berater": "Anna Schmidt",
+
+#### **DELETE /api/bookings/:id** (Admin only)      "verkaufspreis": 1500.00,
+
+Buchung löschen.      "created_at": "2024-06-15T10:30:00.000Z",
+
+      "updated_at": "2024-06-20T14:45:00.000Z"
+
+---    }
+
+  ]
+
+### **Stammdaten-Endpunkte**}
+
 ```
 
-#### **PUT /api/bookings/:id** (Admin only)
+#### **Plattformen**
+
+- `GET /api/platforms` – Alle Plattformen#### **POST /api/bookings** (Admin only)
+
+- `GET /api/platforms/:id` – Einzelne PlattformNeue Buchung erstellen.
+
+
+
+#### **Artikel-Typen****Request Body:**
+
+- `GET /api/article-types?platform_key=koeln` – Artikel-Typen für Plattform```json
+
+- `GET /api/article-types/:id` – Einzelner Artikel-Typ{
+
+  "kundenname": "Neue Firma GmbH",
+
+#### **Produkte**  "kundennummer": "K-67890",
+
+- `GET /api/products?articleTypeId=5` – Produkte für Artikel-Typ  "belegung": "Immobilienmakler",
+
+- `GET /api/products/:id` – Einzelnes Produkt  "zeitraum_von": "2024-08-01T00:00:00.000Z",
+
+  "zeitraum_bis": "2024-08-31T23:59:59.000Z",
+
+#### **Kategorien**  "platzierung": 2,
+
+- `GET /api/categories?active_only=true` – Alle aktiven Kategorien  "status": "reserviert",
+
+  "berater": "Max Mustermann",
+
+#### **Orte**  "verkaufspreis": 2000.00
+
+- `GET /api/locations?active_only=true` – Alle aktiven Orte}
+
+```
+
+#### **Kampagnen**
+
+- `GET /api/campaigns?active_only=true` – Alle aktiven Kampagnen#### **PUT /api/bookings/:id** (Admin only)
+
 Bestehende Buchung aktualisieren.
 
-#### **DELETE /api/bookings/:id** (Admin only)
-Buchung löschen.
+---
 
-### **Verfügbarkeits-Endpunkte**
+#### **DELETE /api/bookings/:id** (Admin only)
+
+### **Verfügbarkeits-Endpunkte**Buchung löschen.
+
+
+
+#### **POST /api/availability/all**### **Verfügbarkeits-Endpunkte**
+
+Umfassende Verfügbarkeitsprüfung.
 
 #### **POST /api/availability/all**
-Umfassende Verfügbarkeitsprüfung für alle Platzierungen.
 
-**Request Body:**
+**Request Body:**Umfassende Verfügbarkeitsprüfung für alle Platzierungen.
+
 ```json
-{
-  "belegung": "Kanalreinigung",
-  "zeitraum_von": "2024-07-01",
-  "zeitraum_bis": "2024-07-31"
-}
+
+{**Request Body:**
+
+  "product_id": 52,```json
+
+  "category_id": 3,{
+
+  "location_id": 1,  "belegung": "Kanalreinigung",
+
+  "campaign_id": 5,  "zeitraum_von": "2024-07-01",
+
+  "duration_start": "2025-07-01",  "zeitraum_bis": "2024-07-31"
+
+  "duration_end": "2025-07-31"}
+
+}```
+
 ```
 
 **Antwort:**
-```json
-{
-  "success": true,
-  "data": {
-    "summary": {
-      "total_placements": 6,
-      "available_placements": 4,
-      "occupied_placements": 2
-    },
-    "placements": [
+
+**Response:**```json
+
+```json{
+
+{  "success": true,
+
+  "success": true,  "data": {
+
+  "data": {    "summary": {
+
+    "available": true,      "total_placements": 6,
+
+    "conflicts": []      "available_placements": 4,
+
+  }      "occupied_placements": 2
+
+}    },
+
+```    "placements": [
+
       {
-        "platzierung": 1,
+
+---        "platzierung": 1,
+
         "status": "available",
-        "conflicts": []
+
+### **Fehlerbehandlung**        "conflicts": []
+
       },
-      {
+
+Alle API-Endpunkte folgen einem konsistenten Fehlerformat:      {
+
         "platzierung": 2,
-        "status": "occupied",
-        "conflicts": [
-          {
-            "id": 15,
-            "kundenname": "Bestehender Kunde",
-            "zeitraum_von": "2024-07-15T00:00:00.000Z",
-            "zeitraum_bis": "2024-07-25T23:59:59.000Z"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
 
-### **Benutzer-Endpunkte**
+```json        "status": "occupied",
 
-#### **GET /api/auth/me**
-Informationen über den aktuell angemeldeten Benutzer abrufen.
+{        "conflicts": [
 
-#### **POST /api/auth/logout**
-Benutzer abmelden und Token invalidieren.
+  "success": false,          {
 
-### **Fehlerbehandlung**
+  "error": "ValidationError",            "id": 15,
 
-Alle API-Endpunkte folgen einem konsistenten Fehlerformat:
+  "message": "Die eingegebenen Daten sind ungültig",            "kundenname": "Bestehender Kunde",
 
-```json
-{
-  "success": false,
-  "error": "ValidationError",
-  "message": "Die eingegebenen Daten sind ungültig",
-  "details": [
-    {
-      "field": "zeitraum_bis",
-      "message": "Enddatum muss nach dem Startdatum liegen"
-    }
-  ]
-}
+  "details": [            "zeitraum_von": "2024-07-15T00:00:00.000Z",
+
+    {            "zeitraum_bis": "2024-07-25T23:59:59.000Z"
+
+      "field": "duration_end",          }
+
+      "message": "Enddatum muss nach dem Startdatum liegen"        ]
+
+    }      }
+
+  ]    ]
+
+}  }
+
+```}
+
 ```
 
 **HTTP-Status-Codes:**
-- `200`: Erfolgreiche Anfrage
+
+- `200`: Erfolgreiche Anfrage### **Benutzer-Endpunkte**
+
 - `201`: Ressource erfolgreich erstellt
-- `400`: Ungültige Anfrage (Validierungsfehler)
-- `401`: Nicht authentifiziert
+
+- `400`: Ungültige Anfrage (Validierungsfehler)#### **GET /api/auth/me**
+
+- `401`: Nicht authentifiziertInformationen über den aktuell angemeldeten Benutzer abrufen.
+
 - `403`: Nicht autorisiert (falsche Rolle)
-- `404`: Ressource nicht gefunden
-- `409`: Konflikt (z.B. Doppelbuchung)
+
+- `404`: Ressource nicht gefunden#### **POST /api/auth/logout**
+
+- `409`: Konflikt (z.B. Doppelbuchung)Benutzer abmelden und Token invalidieren.
+
 - `429`: Zu viele Anfragen (Rate Limiting)
-- `500`: Interner Serverfehler
 
----
+- `500`: Interner Serverfehler### **Fehlerbehandlung**
 
-## 🗄️ Datenbankschema
 
-Das System verwendet PostgreSQL als primäre Datenbank mit einem sorgfältig entworfenen Schema, das Datenintegrität und Performance gewährleistet.
 
-### **Tabelle: bookings**
+---Alle API-Endpunkte folgen einem konsistenten Fehlerformat:
 
-Die Haupttabelle für alle Buchungsdaten.
 
-```sql
-CREATE TABLE bookings (
-    id SERIAL PRIMARY KEY,
-    kundenname VARCHAR(100) NOT NULL,
-    kundennummer VARCHAR(50) NOT NULL,
-    belegung VARCHAR(100) NOT NULL,
-    zeitraum_von TIMESTAMP NOT NULL,
-    zeitraum_bis TIMESTAMP NOT NULL,
-    platzierung INTEGER NOT NULL CHECK (platzierung >= 1 AND platzierung <= 6),
-    status VARCHAR(20) NOT NULL CHECK (status IN ('vorreserviert', 'reserviert', 'gebucht')),
-    berater VARCHAR(100) NOT NULL,
-    verkaufspreis DECIMAL(10,2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Constraints
-    CONSTRAINT check_zeitraum CHECK (zeitraum_bis > zeitraum_von),
-    CONSTRAINT unique_booking UNIQUE (belegung, platzierung, zeitraum_von, zeitraum_bis)
-);
-```
 
-### **Tabelle: users**
+## 🗄️ Datenbankschema```json
 
-Benutzerverwaltung mit rollenbasierter Zugriffskontrolle.
+{
 
-```sql
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    email VARCHAR(100),
-    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'viewer')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+Das System verwendet PostgreSQL mit einem sorgfältig entworfenen Schema.  "success": false,
 
-### **Tabelle: categories**
+  "error": "ValidationError",
 
-Verwaltung der verfügbaren Branchen/Kategorien.
+### **Haupttabellen**  "message": "Die eingegebenen Daten sind ungültig",
 
-```sql
-CREATE TABLE categories (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) UNIQUE NOT NULL,
-    description TEXT,
-    active BOOLEAN DEFAULT true,
+  "details": [
+
+#### **platforms**    {
+
+```sql      "field": "zeitraum_bis",
+
+CREATE TABLE platforms (      "message": "Enddatum muss nach dem Startdatum liegen"
+
+    id SERIAL PRIMARY KEY,    }
+
+    key VARCHAR(50) UNIQUE NOT NULL,  ]
+
+    name VARCHAR(100) NOT NULL,}
+
+    is_active BOOLEAN DEFAULT true,```
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
 
-### **Indizes für Performance**
+);**HTTP-Status-Codes:**
+
+```- `200`: Erfolgreiche Anfrage
+
+- `201`: Ressource erfolgreich erstellt
+
+#### **article_types**- `400`: Ungültige Anfrage (Validierungsfehler)
+
+```sql- `401`: Nicht authentifiziert
+
+CREATE TABLE article_types (- `403`: Nicht autorisiert (falsche Rolle)
+
+    id SERIAL PRIMARY KEY,- `404`: Ressource nicht gefunden
+
+    key VARCHAR(50) UNIQUE NOT NULL,- `409`: Konflikt (z.B. Doppelbuchung)
+
+    name VARCHAR(100) NOT NULL,- `429`: Zu viele Anfragen (Rate Limiting)
+
+    is_campaign_based BOOLEAN DEFAULT true,- `500`: Interner Serverfehler
+
+    is_active BOOLEAN DEFAULT true,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP---
+
+);
+
+```## 🗄️ Datenbankschema
+
+
+
+#### **products**Das System verwendet PostgreSQL als primäre Datenbank mit einem sorgfältig entworfenen Schema, das Datenintegrität und Performance gewährleistet.
 
 ```sql
--- Optimierung für häufige Abfragen
-CREATE INDEX idx_bookings_zeitraum ON bookings (zeitraum_von, zeitraum_bis);
-CREATE INDEX idx_bookings_platzierung ON bookings (platzierung);
-CREATE INDEX idx_bookings_status ON bookings (status);
-CREATE INDEX idx_bookings_belegung ON bookings (belegung);
-CREATE INDEX idx_bookings_berater ON bookings (berater);
 
--- Volltext-Suche
-CREATE INDEX idx_bookings_search ON bookings USING gin(
-    to_tsvector('german', kundenname || ' ' || kundennummer || ' ' || belegung)
-);
+CREATE TABLE products (### **Tabelle: bookings**
+
+    id SERIAL PRIMARY KEY,
+
+    key VARCHAR(50) UNIQUE NOT NULL,Die Haupttabelle für alle Buchungsdaten.
+
+    name VARCHAR(100) NOT NULL,
+
+    description TEXT,```sql
+
+    article_type_id INTEGER NOT NULL REFERENCES article_types(id),CREATE TABLE bookings (
+
+    is_active BOOLEAN DEFAULT true,    id SERIAL PRIMARY KEY,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    kundenname VARCHAR(100) NOT NULL,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP    kundennummer VARCHAR(50) NOT NULL,
+
+);    belegung VARCHAR(100) NOT NULL,
+
+```    zeitraum_von TIMESTAMP NOT NULL,
+
+    zeitraum_bis TIMESTAMP NOT NULL,
+
+#### **bookings**    platzierung INTEGER NOT NULL CHECK (platzierung >= 1 AND platzierung <= 6),
+
+```sql    status VARCHAR(20) NOT NULL CHECK (status IN ('vorreserviert', 'reserviert', 'gebucht')),
+
+CREATE TABLE bookings (    berater VARCHAR(100) NOT NULL,
+
+    id SERIAL PRIMARY KEY,    verkaufspreis DECIMAL(10,2),
+
+    kundenname VARCHAR(100) NOT NULL,    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    kundennummer VARCHAR(50) NOT NULL,    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    platform_id INTEGER NOT NULL REFERENCES platforms(id),    
+
+    product_id INTEGER NOT NULL REFERENCES products(id),    -- Constraints
+
+    category_id INTEGER NOT NULL REFERENCES categories(id),    CONSTRAINT check_zeitraum CHECK (zeitraum_bis > zeitraum_von),
+
+    location_id INTEGER NOT NULL REFERENCES locations(id),    CONSTRAINT unique_booking UNIQUE (belegung, platzierung, zeitraum_von, zeitraum_bis)
+
+    campaign_id INTEGER REFERENCES campaigns(id),);
+
+    duration_start DATE,```
+
+    duration_end DATE,
+
+    status VARCHAR(20) NOT NULL CHECK (status IN ('vorreserviert', 'reserviert', 'gebucht')),### **Tabelle: users**
+
+    berater VARCHAR(100) NOT NULL,
+
+    verkaufspreis DECIMAL(10,2),Benutzerverwaltung mit rollenbasierter Zugriffskontrolle.
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,```sql
+
+    CREATE TABLE users (
+
+    -- Constraints    id SERIAL PRIMARY KEY,
+
+    CONSTRAINT check_campaign_or_duration CHECK (    username VARCHAR(50) UNIQUE NOT NULL,
+
+        (campaign_id IS NOT NULL AND duration_start IS NULL AND duration_end IS NULL) OR    password_hash VARCHAR(255) NOT NULL,
+
+        (campaign_id IS NULL AND duration_start IS NOT NULL AND duration_end IS NOT NULL)    email VARCHAR(100),
+
+    ),    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'viewer')),
+
+    CONSTRAINT check_duration_order CHECK (duration_end IS NULL OR duration_end > duration_start)    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+);    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+```);
+
 ```
 
-### **Datenintegrität & Constraints**
+#### **users**
 
-Das Schema implementiert mehrere Ebenen der Datenintegrität:
+```sql### **Tabelle: categories**
 
-1. **Zeitraum-Validierung**: `zeitraum_bis` muss immer nach `zeitraum_von` liegen.
+CREATE TABLE users (
+
+    id SERIAL PRIMARY KEY,Verwaltung der verfügbaren Branchen/Kategorien.
+
+    username VARCHAR(50) UNIQUE NOT NULL,
+
+    password_hash VARCHAR(255) NOT NULL,```sql
+
+    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'viewer')),CREATE TABLE categories (
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    id SERIAL PRIMARY KEY,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP    name VARCHAR(100) UNIQUE NOT NULL,
+
+);    description TEXT,
+
+```    active BOOLEAN DEFAULT true,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+### **Indizes für Performance**);
+
+```
+
+```sql
+
+-- Buchungen### **Indizes für Performance**
+
+CREATE INDEX idx_bookings_platform ON bookings (platform_id);
+
+CREATE INDEX idx_bookings_product ON bookings (product_id);```sql
+
+CREATE INDEX idx_bookings_category ON bookings (category_id);-- Optimierung für häufige Abfragen
+
+CREATE INDEX idx_bookings_status ON bookings (status);CREATE INDEX idx_bookings_zeitraum ON bookings (zeitraum_von, zeitraum_bis);
+
+CREATE INDEX idx_bookings_campaign ON bookings (campaign_id);CREATE INDEX idx_bookings_platzierung ON bookings (platzierung);
+
+CREATE INDEX idx_bookings_duration ON bookings (duration_start, duration_end);CREATE INDEX idx_bookings_status ON bookings (status);
+
+CREATE INDEX idx_bookings_belegung ON bookings (belegung);
+
+-- Volltext-SucheCREATE INDEX idx_bookings_berater ON bookings (berater);
+
+CREATE INDEX idx_bookings_search ON bookings USING gin(
+
+    to_tsvector('german', kundenname || ' ' || kundennummer)-- Volltext-Suche
+
+);CREATE INDEX idx_bookings_search ON bookings USING gin(
+
+```    to_tsvector('german', kundenname || ' ' || kundennummer || ' ' || belegung)
+
+);
+
+---```
+
+
+
+## 🔒 Sicherheitskonzept### **Datenintegrität & Constraints**
+
+
+
+Sicherheit ist auf mehreren Ebenen implementiert.Das Schema implementiert mehrere Ebenen der Datenintegrität:
+
+
+
+### **Authentifizierung & Autorisierung**1. **Zeitraum-Validierung**: `zeitraum_bis` muss immer nach `zeitraum_von` liegen.
+
 2. **Platzierung-Validierung**: Nur Werte von 1 bis 6 sind erlaubt.
-3. **Status-Validierung**: Nur vordefinierte Status-Werte sind zulässig.
-4. **Eindeutigkeit**: Verhindert Doppelbuchungen derselben Platzierung im selben Zeitraum für dieselbe Branche.
-5. **Referentielle Integrität**: Foreign Key-Constraints zwischen verwandten Tabellen.
+
+1. **Passwort-Sicherheit**:3. **Status-Validierung**: Nur vordefinierte Status-Werte sind zulässig.
+
+   - bcrypt mit 12 Salt-Runden4. **Eindeutigkeit**: Verhindert Doppelbuchungen derselben Platzierung im selben Zeitraum für dieselbe Branche.
+
+   - Keine Klartext-Speicherung5. **Referentielle Integrität**: Foreign Key-Constraints zwischen verwandten Tabellen.
+
+   - Sichere Passwort-Richtlinien
 
 ---
-
-## 🔒 Sicherheitskonzept
-
-Sicherheit ist ein zentraler Aspekt des Systems und wurde auf mehreren Ebenen implementiert.
-
-### **Authentifizierung & Autorisierung**
-
-1. **Passwort-Sicherheit**:
-   - Verwendung von **bcrypt** mit 12 Salt-Runden für das Hashing von Passwörtern.
-   - Keine Klartext-Speicherung von Passwörtern in der Datenbank.
-   - Sichere Passwort-Richtlinien (Mindestlänge, Komplexität).
 
 2. **JWT-Token-Management**:
-   - Tokens haben eine begrenzte Gültigkeitsdauer (24 Stunden).
-   - HTTP-only-Cookies verhindern XSS-Angriffe.
+
+   - 24 Stunden Gültigkeitsdauer## 🔒 Sicherheitskonzept
+
+   - HTTP-only-Cookies (XSS-Schutz)
+
+   - Secure-Flag für HTTPSSicherheit ist ein zentraler Aspekt des Systems und wurde auf mehreren Ebenen implementiert.
+
+
+
+3. **RBAC**:### **Authentifizierung & Autorisierung**
+
+   - Granulare Berechtigungen
+
+   - Middleware-basierte Autorisierung1. **Passwort-Sicherheit**:
+
+   - Frontend-UI-Anpassungen basierend auf Rolle   - Verwendung von **bcrypt** mit 12 Salt-Runden für das Hashing von Passwörtern.
+
+   - Keine Klartext-Speicherung von Passwörtern in der Datenbank.
+
+### **API-Sicherheit**   - Sichere Passwort-Richtlinien (Mindestlänge, Komplexität).
+
+
+
+1. **Rate Limiting**:2. **JWT-Token-Management**:
+
+   - Schutz vor Brute-Force   - Tokens haben eine begrenzte Gültigkeitsdauer (24 Stunden).
+
+   - Konfigurierbare Limits pro IP   - HTTP-only-Cookies verhindern XSS-Angriffe.
+
    - Secure-Flag für HTTPS-Übertragung.
-   - Automatische Token-Erneuerung bei gültigen Sessions.
 
-3. **Rollenbasierte Zugriffskontrolle (RBAC)**:
-   - Granulare Berechtigungen basierend auf Benutzerrollen.
+2. **Input-Validierung**:   - Automatische Token-Erneuerung bei gültigen Sessions.
+
+   - Joi-Validierung aller Eingaben
+
+   - Parametrisierte SQL-Queries (SQL-Injection-Schutz)3. **Rollenbasierte Zugriffskontrolle (RBAC)**:
+
+   - XSS-Schutz durch Sanitization   - Granulare Berechtigungen basierend auf Benutzerrollen.
+
    - Middleware-basierte Autorisierung auf API-Ebene.
-   - Frontend-seitige UI-Anpassungen basierend auf Benutzerrolle.
 
-### **API-Sicherheit**
+3. **CORS**:   - Frontend-seitige UI-Anpassungen basierend auf Benutzerrolle.
 
-1. **Rate Limiting**:
-   - Schutz vor Brute-Force-Angriffen und DDoS.
-   - Konfigurierbare Limits pro IP-Adresse und Zeitfenster.
-   - Unterschiedliche Limits für verschiedene Endpunkte.
+   - Whitelist-basierte Domain-Kontrolle
 
-2. **Input-Validierung**:
+   - Sichere Preflight-Requests### **API-Sicherheit**
+
+
+
+4. **HTTP-Security-Headers**:1. **Rate Limiting**:
+
+   - Helmet.js   - Schutz vor Brute-Force-Angriffen und DDoS.
+
+   - Content Security Policy (CSP)   - Konfigurierbare Limits pro IP-Adresse und Zeitfenster.
+
+   - X-Frame-Options, X-Content-Type-Options   - Unterschiedliche Limits für verschiedene Endpunkte.
+
+
+
+### **Datenbank-Sicherheit**2. **Input-Validierung**:
+
    - Umfassende Validierung aller eingehenden Daten mit **Joi**.
-   - Schutz vor SQL-Injection durch parametrisierte Queries.
-   - XSS-Schutz durch Input-Sanitization.
 
-3. **CORS-Konfiguration**:
+1. **Verbindungssicherheit**:   - Schutz vor SQL-Injection durch parametrisierte Queries.
+
+   - SSL/TLS-verschlüsselt   - XSS-Schutz durch Input-Sanitization.
+
+   - Umgebungsvariablen für Credentials
+
+   - Minimale Berechtigungen3. **CORS-Konfiguration**:
+
    - Restriktive Cross-Origin-Richtlinien.
-   - Whitelist-basierte Domain-Kontrolle.
-   - Sichere Preflight-Request-Behandlung.
 
-4. **HTTP-Security-Headers**:
+2. **Datenintegrität**:   - Whitelist-basierte Domain-Kontrolle.
+
+   - Foreign Key Constraints   - Sichere Preflight-Request-Behandlung.
+
+   - Check Constraints
+
+   - Unique Constraints4. **HTTP-Security-Headers**:
+
    - **Helmet.js** für automatische Sicherheits-Header.
-   - Content Security Policy (CSP).
+
+---   - Content Security Policy (CSP).
+
    - X-Frame-Options, X-Content-Type-Options, etc.
+
+## 🚀 Deployment & Betrieb
 
 ### **Datenbank-Sicherheit**
 
+### **Server-Setup**
+
 1. **Verbindungssicherheit**:
-   - SSL/TLS-verschlüsselte Datenbankverbindungen.
-   - Umgebungsvariablen für sensible Konfigurationsdaten.
-   - Keine Hardcoded-Credentials im Quellcode.
+
+**Domain:** sonderplatzierung.greven.de     - SSL/TLS-verschlüsselte Datenbankverbindungen.
+
+**Server:** extweb04 (217.110.253.198)     - Umgebungsvariablen für sensible Konfigurationsdaten.
+
+**Backend-Port:** 3101     - Keine Hardcoded-Credentials im Quellcode.
+
+**Nginx-Proxy:** Port 80/443 → Backend 3101
 
 2. **Zugriffskontrolle**:
-   - Minimale Datenbankberechtigungen für Anwendungsbenutzer.
+
+### **Deployment-Schritte**   - Minimale Datenbankberechtigungen für Anwendungsbenutzer.
+
    - Separate Benutzer für verschiedene Umgebungen (Dev, Staging, Prod).
-   - Regelmäßige Rotation von Datenbankpasswörtern.
 
-### **Deployment-Sicherheit**
+1. **Code auf Server bringen:**   - Regelmäßige Rotation von Datenbankpasswörtern.
 
-1. **Umgebungsvariablen**:
-   - Alle sensiblen Daten in Umgebungsvariablen.
+   ```bash
+
+   ssh user@217.110.253.198### **Deployment-Sicherheit**
+
+   cd /pfad/zu/Sonderplatzierungonline
+
+   git pull origin master1. **Umgebungsvariablen**:
+
+   ```   - Alle sensiblen Daten in Umgebungsvariablen.
+
    - Sichere Verwaltung von Secrets in Render.com.
-   - Getrennte Konfigurationen für verschiedene Umgebungen.
 
-2. **HTTPS-Erzwingung**:
-   - Automatische HTTPS-Weiterleitung.
-   - HSTS-Header für Browser-Sicherheit.
-   - Sichere Cookie-Übertragung.
+2. **Backend aktualisieren:**   - Getrennte Konfigurationen für verschiedene Umgebungen.
 
----
+   ```bash
 
-## 🧪 Testing & Qualitätssicherung
+   cd server2. **HTTPS-Erzwingung**:
 
-Das Projekt implementiert eine umfassende Testing-Strategie auf mehreren Ebenen.
+   npm install   - Automatische HTTPS-Weiterleitung.
+
+   pm2 restart ecosystem.config.js   - HSTS-Header für Browser-Sicherheit.
+
+   ```   - Sichere Cookie-Übertragung.
+
+
+
+3. **Frontend neu bauen:**---
+
+   ```bash
+
+   cd ../client## 🧪 Testing & Qualitätssicherung
+
+   npm install
+
+   npm run buildDas Projekt implementiert eine umfassende Testing-Strategie auf mehreren Ebenen.
+
+   ```
 
 ### **Backend-Tests**
 
-1. **Unit-Tests**:
-   - Tests für alle Modelle und Utility-Funktionen.
-   - Mocking von Datenbankverbindungen für isolierte Tests.
-   - Verwendung von **Jest** als Test-Framework.
+4. **Nginx neu laden:**
 
-2. **Integration-Tests**:
+   ```bash1. **Unit-Tests**:
+
+   sudo nginx -t   - Tests für alle Modelle und Utility-Funktionen.
+
+   sudo systemctl reload nginx   - Mocking von Datenbankverbindungen für isolierte Tests.
+
+   ```   - Verwendung von **Jest** als Test-Framework.
+
+
+
+### **pm2 Prozessmanagement**2. **Integration-Tests**:
+
    - End-to-End-Tests für alle API-Endpunkte.
-   - Authentifizierungs- und Autorisierungstests.
-   - Datenbankintegrationstests mit Test-Datenbank.
+
+```bash   - Authentifizierungs- und Autorisierungstests.
+
+# Status prüfen   - Datenbankintegrationstests mit Test-Datenbank.
+
+pm2 status
 
 3. **API-Tests**:
-   - Automatisierte Tests mit **Supertest**.
-   - Validierung von Request/Response-Formaten.
+
+# Logs anzeigen   - Automatisierte Tests mit **Supertest**.
+
+pm2 logs sponline-backend   - Validierung von Request/Response-Formaten.
+
    - Fehlerbehandlungs-Tests.
 
-### **Frontend-Tests**
+# Neustart
 
-1. **Component-Tests**:
-   - Tests für alle React-Komponenten mit **React Testing Library**.
-   - User-Interaction-Tests.
+pm2 restart sponline-backend### **Frontend-Tests**
+
+
+
+# Fehler-Logs1. **Component-Tests**:
+
+pm2 logs sponline-backend --err   - Tests für alle React-Komponenten mit **React Testing Library**.
+
+```   - User-Interaction-Tests.
+
    - State-Management-Tests.
 
-2. **Integration-Tests**:
-   - Tests für die Kommunikation zwischen Komponenten.
-   - API-Integration-Tests mit Mock-Servern.
-   - Routing-Tests.
+### **Nginx-Konfiguration**
 
-### **End-to-End-Tests**
+2. **Integration-Tests**:
+
+Die Datei `nginx-sonderplatzierung.conf` enthält die vollständige vHost-Konfiguration mit:   - Tests für die Kommunikation zwischen Komponenten.
+
+- Proxy zu Backend (Port 3101)   - API-Integration-Tests mit Mock-Servern.
+
+- SSL/TLS-Einstellungen   - Routing-Tests.
+
+- CORS-Header
+
+- Gzip-Komprimierung### **End-to-End-Tests**
+
+- Static File Serving
 
 1. **Browser-Tests**:
-   - Vollständige User-Journey-Tests.
+
+### **SSL-Zertifikat (Let's Encrypt)**   - Vollständige User-Journey-Tests.
+
    - Cross-Browser-Kompatibilitätstests.
-   - Mobile-Responsiveness-Tests.
 
-2. **Performance-Tests**:
-   - Load-Testing der API-Endpunkte.
+```bash   - Mobile-Responsiveness-Tests.
+
+sudo certbot --nginx -d sonderplatzierung.greven.de
+
+sudo certbot renew --dry-run2. **Performance-Tests**:
+
+```   - Load-Testing der API-Endpunkte.
+
    - Frontend-Performance-Metriken.
-   - Datenbankperformance-Tests.
 
-### **Code-Qualität**
+---   - Datenbankperformance-Tests.
 
-1. **Linting & Formatting**:
+
+
+## 📊 Performance & Optimierung### **Code-Qualität**
+
+
+
+### **Frontend-Optimierungen**1. **Linting & Formatting**:
+
    - **ESLint** für JavaScript/React-Code-Qualität.
-   - **Prettier** für konsistente Code-Formatierung.
-   - **Husky** für Pre-Commit-Hooks.
 
-2. **Code-Coverage**:
-   - Mindestens 80% Test-Coverage für kritische Pfade.
-   - Coverage-Reports in CI/CD-Pipeline.
+- **Vite**: Ultraschnelle Builds und HMR   - **Prettier** für konsistente Code-Formatierung.
+
+- **Tree-Shaking**: Minimale Bundle-Größen   - **Husky** für Pre-Commit-Hooks.
+
+- **Code-Splitting**: Lazy Loading für große Komponenten
+
+- **React.memo**: Component-Memoization2. **Code-Coverage**:
+
+- **Bildkomprimierung**: WebP-Format   - Mindestens 80% Test-Coverage für kritische Pfade.
+
+- **CSS-Purging**: Minimale Stylesheet-Größen   - Coverage-Reports in CI/CD-Pipeline.
+
    - Automatische Coverage-Badges im Repository.
+
+### **Backend-Optimierungen**
 
 ---
 
-## 🚀 Deployment & DevOps
+- **Datenbank-Indizes**: Strategische Indizierung
 
-Das Projekt nutzt moderne DevOps-Praktiken für eine zuverlässige und skalierbare Bereitstellung.
+- **Query-Optimierung**: Effiziente SQL-Queries## 🚀 Deployment & DevOps
+
+- **Connection-Pooling**: PostgreSQL Connection Pool
+
+- **Response-Caching**: Statische Daten cachenDas Projekt nutzt moderne DevOps-Praktiken für eine zuverlässige und skalierbare Bereitstellung.
+
+- **Gzip-Komprimierung**: API-Response-Komprimierung
 
 ### **Continuous Integration/Continuous Deployment (CI/CD)**
 
+---
+
 1. **GitHub Actions**:
-   - Automatische Tests bei jedem Pull Request.
+
+## 🧪 Testing   - Automatische Tests bei jedem Pull Request.
+
    - Automatisches Deployment bei Merge in `main`-Branch.
-   - Parallelisierte Test-Ausführung für schnelle Feedback-Zyklen.
 
-2. **Render.com Integration**:
-   - Infrastruktur als Code mit `render.yaml`.
-   - Automatische Umgebungsvariablen-Verwaltung.
-   - Zero-Downtime-Deployments.
+### **Backend-Tests**   - Parallelisierte Test-Ausführung für schnelle Feedback-Zyklen.
 
-### **Monitoring & Observability**
 
-1. **Application Monitoring**:
-   - Health-Check-Endpunkte für Service-Monitoring.
-   - Strukturierte Logging mit **Morgan**.
-   - Error-Tracking und Alerting.
 
-2. **Performance Monitoring**:
+```bash2. **Render.com Integration**:
+
+cd server   - Infrastruktur als Code mit `render.yaml`.
+
+npm test   - Automatische Umgebungsvariablen-Verwaltung.
+
+```   - Zero-Downtime-Deployments.
+
+
+
+### **Frontend-Tests**### **Monitoring & Observability**
+
+
+
+```bash1. **Application Monitoring**:
+
+cd client   - Health-Check-Endpunkte für Service-Monitoring.
+
+npm test   - Strukturierte Logging mit **Morgan**.
+
+```   - Error-Tracking und Alerting.
+
+
+
+---2. **Performance Monitoring**:
+
    - Response-Time-Metriken.
-   - Datenbankperformance-Überwachung.
+
+## 📞 Support & Kontakt   - Datenbankperformance-Überwachung.
+
    - Frontend-Performance-Metriken.
 
+### **Entwickler**
+
 3. **Security Monitoring**:
-   - Rate-Limiting-Logs.
-   - Failed-Authentication-Tracking.
+
+**Tobias Leyendecker**     - Rate-Limiting-Logs.
+
+GitHub: [@KIGREVEN](https://github.com/KIGREVEN)   - Failed-Authentication-Tracking.
+
    - Suspicious-Activity-Detection.
+
+### **Repository**
 
 ### **Backup & Disaster Recovery**
 
-1. **Datenbank-Backups**:
-   - Automatische tägliche Backups durch Render.com.
-   - Point-in-Time-Recovery-Möglichkeiten.
-   - Cross-Region-Backup-Replikation.
+[https://github.com/KIGREVEN/Sonderplatzierungonline](https://github.com/KIGREVEN/Sonderplatzierungonline)
 
-2. **Code-Backup**:
-   - Git-basierte Versionskontrolle.
-   - Multiple Repository-Mirrors.
-   - Automatische Release-Tagging.
+1. **Datenbank-Backups**:
+
+---   - Automatische tägliche Backups durch Render.com.
+
+   - Point-in-Time-Recovery-Möglichkeiten.
+
+## 📈 Projekt-Metriken   - Cross-Region-Backup-Replikation.
+
+
+
+- **Lines of Code**: ~30,000+ (Frontend + Backend)2. **Code-Backup**:
+
+- **API-Endpunkte**: 25+   - Git-basierte Versionskontrolle.
+
+- **Datenbanktabellen**: 12+   - Multiple Repository-Mirrors.
+
+- **React-Komponenten**: 20+   - Automatische Release-Tagging.
+
+- **Performance**: <200ms API Response Time
 
 ### **Skalierung**
 
+---
+
 1. **Horizontale Skalierung**:
-   - Load-Balancer-Ready-Architektur.
+
+**Entwickelt mit modernster Technologie – Ein Beispiel für effiziente Full-Stack-Entwicklung.**   - Load-Balancer-Ready-Architektur.
+
    - Stateless-Application-Design.
-   - Database-Connection-Pooling.
+
+*Letzte Aktualisierung: Oktober 2025*   - Database-Connection-Pooling.
+
 
 2. **Vertikale Skalierung**:
    - Konfigurierbare Resource-Limits.
