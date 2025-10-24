@@ -216,6 +216,7 @@ useEffect(() => {
   // Set article_type_id after products and articleTypes are loaded and booking.product_id is present
   useEffect(() => {
     if (!isOpen || !booking || !booking.product_id || products.length === 0 || articleTypes.length === 0) return;
+    if (formData.article_type_id) return;
     // Finde das Produkt in der geladenen Liste
     const product = products.find(p => p.id === parseInt(booking.product_id));
     if (product && product.article_type_id) {
@@ -236,7 +237,7 @@ useEffect(() => {
         }
       }
     }
-  }, [isOpen, booking, products, articleTypes]);
+  }, [isOpen, booking, products, articleTypes, formData.article_type_id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
