@@ -138,9 +138,9 @@ class Booking {
   }
 
   // Check for double booking (supports both campaign and duration mode)
-  // Campaign mode: (platform_id, product_id, location_id, campaign_id) unique
-  // Duration mode: (platform_id, product_id, location_id) + duration overlap check
-  static async checkDoubleBooking(platform_id, product_id, location_id, campaign_id, duration_start, duration_end, excludeId = null) {
+  // Campaign mode: (platform_id, product_id, location_id, category_id, campaign_id) unique
+  // Duration mode: (platform_id, product_id, location_id, category_id) + duration overlap check
+  static async checkDoubleBooking(platform_id, product_id, location_id, category_id, campaign_id, duration_start, duration_end, excludeId = null) {
     // Campaign-based check
     if (campaign_id) {
       let queryText = `
@@ -149,17 +149,19 @@ class Booking {
         WHERE platform_id = $1 
           AND product_id = $2 
           AND location_id = $3 
-          AND campaign_id = $4
+          AND category_id = $4
+          AND campaign_id = $5
           AND platform_id IS NOT NULL
           AND product_id IS NOT NULL
           AND location_id IS NOT NULL
+          AND category_id IS NOT NULL
           AND campaign_id IS NOT NULL
       `;
       
-      const params = [platform_id, product_id, location_id, campaign_id];
+      const params = [platform_id, product_id, location_id, category_id, campaign_id];
       
       if (excludeId) {
-        queryText += ` AND id != $5`;
+        queryText += ` AND id != $6`;
         params.push(excludeId);
       }
 
@@ -175,19 +177,20 @@ class Booking {
         WHERE platform_id = $1 
           AND product_id = $2 
           AND location_id = $3 
+          AND category_id = $4
           AND duration_start IS NOT NULL
           AND duration_end IS NOT NULL
           AND (
-            (duration_start <= $4 AND duration_end >= $4) OR
             (duration_start <= $5 AND duration_end >= $5) OR
-            (duration_start >= $4 AND duration_end <= $5)
+            (duration_start <= $6 AND duration_end >= $6) OR
+            (duration_start >= $5 AND duration_end <= $6)
           )
       `;
       
-      const params = [platform_id, product_id, location_id, duration_start, duration_end];
+      const params = [platform_id, product_id, location_id, category_id, duration_start, duration_end];
       
       if (excludeId) {
-        queryText += ` AND id != $6`;
+        queryText += ` AND id != $7`;
         params.push(excludeId);
       }
 
@@ -204,11 +207,12 @@ class Booking {
   static async create(bookingData) {
     const validatedData = await this.validate(bookingData);
 
-    // Check for double booking (pass duration fields)
+    // Check for double booking (pass category_id and duration fields)
     const existingBooking = await this.checkDoubleBooking(
       validatedData.platform_id,
       validatedData.product_id,
       validatedData.location_id,
+      validatedData.category_id,
       validatedData.campaign_id || null,
       validatedData.duration_start || null,
       validatedData.duration_end || null
@@ -347,11 +351,12 @@ class Booking {
 
     const validatedData = await this.validate(updateData);
 
-    // Check for double booking (excluding current booking, pass duration fields)
+    // Check for double booking (excluding current booking, pass category_id and duration fields)
     const conflictingBooking = await this.checkDoubleBooking(
       validatedData.platform_id,
       validatedData.product_id,
       validatedData.location_id,
+      validatedData.category_id,
       validatedData.campaign_id || null,
       validatedData.duration_start || null,
       validatedData.duration_end || null,
